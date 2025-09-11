@@ -1,0 +1,47 @@
+prefix: "<gray>[<gold>ContractRPG<gray>] "
+
+# --- Mensajes Generales ---
+contract_accepted: "<green>¡Contrato aceptado! Revisa tu progreso con /contratos."
+contract_limit_reached: "<red>Ya has aceptado el máximo de contratos diarios."
+no_active_contracts: "<gray>No tienes contratos activos."
+contracts_offered: "<green>¡Nuevos contratos diarios disponibles! Usa /contratos para verlos."
+contract_completed: "<gold>¡Contrato completado! Has recibido <yellow>%reward%</yellow>."
+daily_mission_progress_lost: "<c>¡Oh no! Has perdido el progreso de tus misiones diarias por no completarlas a tiempo. ¡Acepta nuevas y asegúrate de terminarlas!"
+weekly_mission_progress_lost: "<c>¡Oh no! Has perdido el progreso de tu misión semanal. ¡La próxima semana tendrás otra oportunidad!"
+
+# --- GUI ---
+gui_title: "Panel de Contratos"
+gui_available_title: "<green>Contratos Disponibles <gray>(%accepted%/%max%)"
+gui_active_title: "<yellow>Contratos Activos"
+gui_click_to_accept: "<gray>» <white>¡Click para aceptar!"
+gui_reward: "<gold>Recompensa: <yellow>%reward%"
+gui_progress: "<gray>Progreso: <green>%current%<gray>/<green>%required%"
+
+# --- Formatos de Misión ---
+mission-formats:
+  KILL: "Matar %amount% de %target%"
+  KILL_MYTHIC: "Asesinar a %amount% de %target%"
+  BREAK: "Minar %amount% bloques de %target%"
+  FARM: "Obtener %amount% de %target%"
+  DELIVER_MMOITEM: "Entregar %amount% de %target%"
+
+# --- Action Bar ---
+actionbar_progress: "<green>%mission%: <yellow>%current%<gray>/<yellow>%required%"
+
+# --- Mensajes de NPC ---
+npc_delivery_greet: "<yellow>¡Hola! Si tienes algún objeto de contrato para entregar, ¡sostenlo en tu mano y habla conmigo!"
+npc_delivery_not_mmoitem: "<red>Este no parece ser un objeto especial de contrato."
+npc_delivery_wrong_item: "<red>No necesito este objeto ahora mismo. Revisa tus contratos activos."
+
+# --- Claves de Traducción ---
+translation-keys:
+  ZOMBIE: "Zombis"
+  SKELETON: "Esqueletos"
+  SkeletalKnight: "<red>Caballero Esquelético</red>"
+  AncientGolem: "<dark_red>Golem Ancestral</dark_red>"
+  STONE: "Piedra"
+  DIAMOND_ORE: "Mena de Diamante"
+  OAK_LOG: "Tronco de Roble"
+  WHEAT: "Trigo"
+  "MATERIAL.STEEL_INGOT": "<aqua>Lingote de Acero</aqua>"
+  "SWORD.CUTLASS": "<light_purple>Sable</light_purple>"

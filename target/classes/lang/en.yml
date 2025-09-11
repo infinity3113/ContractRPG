@@ -1,0 +1,48 @@
+prefix: "<gray>[<gold>ContractRPG<gray>] "
+
+# --- General Messages ---
+contract_accepted: "<green>Contract accepted! Check your progress with /contracts."
+contract_limit_reached: "<red>You have already accepted the maximum number of daily contracts."
+no_active_contracts: "<gray>You have no active contracts."
+contracts_offered: "<green>New daily contracts are available! Use /contracts to see them."
+contract_completed: "<gold>Contract completed! You have received <yellow>%reward%</yellow>."
+daily_mission_progress_lost: "<c>Oh no! You lost progress on your daily missions for not completing them in time. Accept new ones and make sure to finish them!"
+weekly_mission_progress_lost: "<c>Oh no! You lost your progress on the weekly mission. You'll get another chance next week!"
+
+
+# --- GUI ---
+gui_title: "Contracts Panel"
+gui_available_title: "<green>Available Contracts <gray>(%accepted%/%max%)"
+gui_active_title: "<yellow>Active Contracts"
+gui_click_to_accept: "<gray>» <white>Click to accept!"
+gui_reward: "<gold>Reward: <yellow>%reward%"
+gui_progress: "<gray>Progress: <green>%current%<gray>/<green>%required%"
+
+# --- Mission Formats ---
+mission-formats:
+  KILL: "Kill %amount% %target%"
+  KILL_MYTHIC: "Slay %amount% %target%"
+  BREAK: "Mine %amount% %target% blocks"
+  FARM: "Obtain %amount% %target%"
+  DELIVER_MMOITEM: "Deliver %amount% %target%"
+
+# --- Action Bar ---
+actionbar_progress: "<green>%mission%: <yellow>%current%<gray>/<yellow>%required%"
+
+# --- NPC Messages ---
+npc_delivery_greet: "<yellow>Hello! If you have a contract item to deliver, hold it in your hand and talk to me!"
+npc_delivery_not_mmoitem: "<red>This doesn't seem to be a special contract item."
+npc_delivery_wrong_item: "<red>I don't need this item right now. Check your active contracts."
+
+# --- Translation Keys ---
+translation-keys:
+  ZOMBIE: "Zombies"
+  SKELETON: "Skeletons"
+  SkeletalKnight: "<red>Skeletal Knight</red>"
+  AncientGolem: "<dark_red>Ancient Golem</dark_red>"
+  STONE: "Stone"
+  DIAMOND_ORE: "Diamond Ore"
+  OAK_LOG: "Oak Log"
+  WHEAT: "Wheat"
+  "MATERIAL.STEEL_INGOT": "<aqua>Steel Ingot</aqua>"
+  "SWORD.CUTLASS": "<light_purple>Cutlass</light_purple>"
