@@ -2,7 +2,10 @@ package com.example.contractrpg.gui;
 
 import com.example.contractrpg.ContractRPG;
 import com.example.contractrpg.contracts.Contract;
+import com.example.contractrpg.contracts.ContractManager;
+import com.example.contractrpg.contracts.MissionType;
 import com.example.contractrpg.data.PlayerData;
+import com.example.contractrpg.managers.LangManager;
 import com.example.contractrpg.util.ProgressBar;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -19,139 +22,194 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ContractGUI implements Listener {
 
     private final ContractRPG plugin;
     private final Player player;
-    private final PlayerData playerData;
+    private final LangManager lang;
+    private final ContractManager contractManager;
 
     public ContractGUI(ContractRPG plugin, Player player) {
         this.plugin = plugin;
         this.player = player;
-        this.playerData = plugin.getContractManager().getPlayerData(player);
-        Bukkit.getPluginManager().registerEvents(this, plugin);
+        this.lang = plugin.getLangManager();
+        this.contractManager = plugin.getContractManager();
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    public void open() {
-        Component titleComponent = MiniMessage.miniMessage().deserialize(plugin.getLangManager().getMessage("gui_title"));
-        String legacyTitle = LegacyComponentSerializer.legacySection().serialize(titleComponent);
-        Inventory gui = Bukkit.createInventory(null, 54, legacyTitle);
+    public void openMainMenu() {
+        String title = formatString(lang.getMessage("gui.main_menu.title"));
+        Inventory gui = Bukkit.createInventory(player, 27, title);
 
-        populateItems(gui);
+        gui.setItem(11, createGuiItem(Material.WRITABLE_BOOK, "gui.main_menu.active_contracts.name", "gui.main_menu.active_contracts.lore"));
+        gui.setItem(13, createGuiItem(Material.SUNFLOWER, "gui.main_menu.daily_contracts.name", "gui.main_menu.daily_contracts.lore"));
+        gui.setItem(15, createGuiItem(Material.CLOCK, "gui.main_menu.weekly_contracts.name", "gui.main_menu.weekly_contracts.lore"));
 
+        fillEmptySlots(gui, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
         player.openInventory(gui);
     }
 
-    private void populateItems(Inventory gui) {
-        gui.clear(); // Limpia el inventario antes de volver a llenarlo
-        
-        int acceptedDaily = (int) playerData.getActiveContracts().stream().filter(c -> c.getContractType() == com.example.contractrpg.contracts.ContractType.DAILY).count();
-        int maxDaily = plugin.getConfig().getInt("daily-missions.selectable-amount", 2);
+    private void openContractList(String type) {
+        PlayerData playerData = contractManager.getPlayerData(player);
+        List<Contract> contractsToShow;
+        String titleKey;
+        boolean isAcceptableList;
 
-        ItemStack availableTitle = createItem(Material.EMERALD_BLOCK, plugin.getLangManager().getMessage("gui_available_title").replace("%accepted%", String.valueOf(acceptedDaily)).replace("%max%", String.valueOf(maxDaily)));
-        gui.setItem(10, availableTitle);
-        
-        int availableSlot = 19;
-        for (Contract contract : playerData.getAvailableDailyContracts()) {
-            if (availableSlot > 23) break; // Límite de slots para disponibles
-            gui.setItem(availableSlot++, createContractItem(contract, false));
+        switch (type) {
+            case "ACTIVE":
+                titleKey = "gui.active_contracts.title";
+                contractsToShow = playerData.getActiveContracts();
+                isAcceptableList = false;
+                break;
+            case "DAILY":
+                titleKey = "gui.daily_contracts.title";
+                contractsToShow = playerData.getAvailableDailyContracts();
+                isAcceptableList = true;
+                break;
+            case "WEEKLY":
+                titleKey = "gui.weekly_contracts.title";
+                contractsToShow = playerData.getAvailableWeeklyContracts();
+                isAcceptableList = true;
+                break;
+            default:
+                return;
         }
 
-        ItemStack activeTitle = createItem(Material.DIAMOND_BLOCK, plugin.getLangManager().getMessage("gui_active_title"));
-        gui.setItem(16, activeTitle);
+        String title = formatString(lang.getMessage(titleKey));
+        Inventory gui = Bukkit.createInventory(player, 54, title);
 
-        int activeSlot = 25;
-        for (Contract contract : playerData.getActiveContracts()) {
-            if (activeSlot > 29) break; // Límite de slots para activos
-            gui.setItem(activeSlot++, createContractItem(contract, true));
-        }
-    }
-    
-    private ItemStack createContractItem(Contract contract, boolean isActive) {
-        Material material = isActive ? Material.WRITABLE_BOOK : Material.BOOK;
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-
-        String missionKey = contract.getMissionType().name();
-        String missionFormat = plugin.getLangManager().getMessage("mission-formats." + missionKey);
-        
-        String targetKey = "translation-keys." + contract.getTarget().replace(":", ".");
-        String translatedTarget = plugin.getLangManager().getMessage(targetKey);
-
-        String missionName = missionFormat
-                .replace("%amount%", String.valueOf(contract.getRequiredAmount()))
-                .replace("%target%", translatedTarget);
-        
-        Component nameComponent = MiniMessage.miniMessage().deserialize(missionName);
-        meta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(nameComponent));
-
-        List<Component> componentLore = new ArrayList<>();
-        componentLore.add(Component.text("")); 
-
-        String progressBar = ProgressBar.create(contract.getCurrentAmount(), contract.getRequiredAmount(), 20, "▌", "<green>", "<gray>");
-        componentLore.add(MiniMessage.miniMessage().deserialize(plugin.getLangManager().getMessage("gui_progress")
-                .replace("%current%", String.valueOf(contract.getCurrentAmount()))
-                .replace("%required%", String.valueOf(contract.getRequiredAmount()))
-        ));
-        componentLore.add(MiniMessage.miniMessage().deserialize(progressBar));
-        componentLore.add(Component.text(""));
-
-        componentLore.add(MiniMessage.miniMessage().deserialize(plugin.getLangManager().getMessage("gui_reward")
-                .replace("%reward%", String.valueOf(contract.getReward()))
-        ));
-
-        if (!isActive) {
-            componentLore.add(Component.text(""));
-            componentLore.add(MiniMessage.miniMessage().deserialize(plugin.getLangManager().getMessage("gui_click_to_accept")));
+        for (int i = 0; i < contractsToShow.size() && i < 45; i++) {
+            Contract contract = contractsToShow.get(i);
+            gui.setItem(i, createContractItem(contract, isAcceptableList));
         }
 
-        List<String> legacyLore = new ArrayList<>();
-        for (Component line : componentLore) {
-            legacyLore.add(LegacyComponentSerializer.legacySection().serialize(line));
-        }
-        meta.setLore(legacyLore);
-
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private ItemStack createItem(Material material, String name) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(LegacyComponentSerializer.legacySection().serialize(MiniMessage.miniMessage().deserialize(name)));
-        item.setItemMeta(meta);
-        return item;
+        gui.setItem(49, createGuiItem(Material.ARROW, "gui.back_button.name", "gui.back_button.lore"));
+        fillEmptySlots(gui, new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+        player.openInventory(gui);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player)) return;
-        if (event.getInventory().getHolder() != null) return;
-        String legacyTitle = LegacyComponentSerializer.legacySection().serialize(MiniMessage.miniMessage().deserialize(plugin.getLangManager().getMessage("gui_title")));
-        if (!event.getView().getTitle().equals(legacyTitle)) return;
+        if (event.getClickedInventory() == null || !event.getView().getPlayer().getUniqueId().equals(player.getUniqueId())) return;
 
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
+        String title = event.getView().getTitle();
         ItemStack clickedItem = event.getCurrentItem();
+
         if (clickedItem == null || clickedItem.getType() == Material.AIR) return;
+        event.setCancelled(true);
 
-        if (clickedItem.getType() == Material.BOOK) {
-            int slot = event.getSlot();
-            int availableContractIndex = slot - 19;
+        String mainMenuTitle = formatString(lang.getMessage("gui.main_menu.title"));
+        String dailyContractsTitle = formatString(lang.getMessage("gui.daily_contracts.title"));
+        String weeklyContractsTitle = formatString(lang.getMessage("gui.weekly_contracts.title"));
 
-            if (availableContractIndex >= 0 && availableContractIndex < playerData.getAvailableDailyContracts().size()) {
-                Contract contractToAccept = playerData.getAvailableDailyContracts().get(availableContractIndex);
-                
-                boolean accepted = plugin.getContractManager().acceptContract(player, contractToAccept);
+        if (title.equals(mainMenuTitle)) {
+            if (clickedItem.getType() == Material.WRITABLE_BOOK) openContractList("ACTIVE");
+            else if (clickedItem.getType() == Material.SUNFLOWER) openContractList("DAILY");
+            else if (clickedItem.getType() == Material.CLOCK) openContractList("WEEKLY");
+        }
+        else if (title.equals(dailyContractsTitle)) {
+            handleContractAcceptance(clickedItem, contractManager.getPlayerData(player).getAvailableDailyContracts());
+        }
+        else if (title.equals(weeklyContractsTitle)) {
+            handleContractAcceptance(clickedItem, contractManager.getPlayerData(player).getAvailableWeeklyContracts());
+        }
+        
+        if (clickedItem.getType() == Material.ARROW) {
+            openMainMenu();
+        }
+    }
 
-                if (accepted) {
-                    populateItems(event.getInventory());
-                } else {
-                    player.closeInventory();
+    private void handleContractAcceptance(ItemStack clickedItem, List<Contract> availableContracts) {
+        if (clickedItem.getType() == Material.ARROW) {
+            openMainMenu();
+            return;
+        }
+
+        if (clickedItem.hasItemMeta() && clickedItem.getItemMeta().hasLore()) {
+            List<String> lore = clickedItem.getItemMeta().getLore();
+            if (lore == null || lore.isEmpty()) return;
+
+            for (Contract contract : availableContracts) {
+                String missionLine = formatString(getFormattedMissionLine(contract));
+                if (lore.get(0).equals(missionLine)) {
+                    if (contractManager.acceptContract(player, contract)) {
+                        player.closeInventory();
+                    }
+                    return;
                 }
             }
         }
+    }
+
+    private ItemStack createContractItem(Contract contract, boolean isAcceptable) {
+        Material material = getMaterialForMission(contract.getMissionType());
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+
+        List<String> lore = new ArrayList<>();
+        lore.add(getFormattedMissionLine(contract));
+        lore.add(lang.getMessage("gui.item.reward").replace("%reward%", String.valueOf(contract.getReward())));
+        
+        if (!isAcceptable) {
+            lore.add(" ");
+            lore.add(ProgressBar.create(contract.getCurrentAmount(), contract.getRequiredAmount()));
+        } else {
+            lore.add(" ");
+            lore.add(lang.getMessage("gui.item.click_to_accept"));
+        }
+
+        meta.setDisplayName(formatString(lang.getMessage("gui.item.contract_title")));
+        meta.setLore(lore.stream().map(this::formatString).collect(Collectors.toList()));
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack createGuiItem(Material material, String nameKey, String loreKey) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(formatString(lang.getMessage(nameKey)));
+        List<String> lore = lang.getStringList(loreKey).stream().map(this::formatString).collect(Collectors.toList());
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private void fillEmptySlots(Inventory inv, ItemStack item) {
+        for (int i = 0; i < inv.getSize(); i++) {
+            if (inv.getItem(i) == null || inv.getItem(i).getType() == Material.AIR) {
+                ItemStack fillItem = item.clone();
+                ItemMeta meta = fillItem.getItemMeta();
+                if (meta != null) {
+                    meta.setDisplayName(" ");
+                    fillItem.setItemMeta(meta);
+                }
+                inv.setItem(i, fillItem);
+            }
+        }
+    }
+
+    private String getFormattedMissionLine(Contract contract) {
+        String missionKey = contract.getMissionType().name();
+        String missionFormat = lang.getMessage("mission-formats." + missionKey);
+        return missionFormat.replace("%amount%", String.valueOf(contract.getRequiredAmount()))
+                .replace("%target%", contract.getTarget().replace("_", " "));
+    }
+
+    private Material getMaterialForMission(MissionType type) {
+        switch (type) {
+            case KILL: case KILL_MYTHIC: return Material.DIAMOND_SWORD;
+            case BREAK: return Material.DIAMOND_PICKAXE;
+            case FARM: return Material.WHEAT;
+            case DELIVER_MMOITEM: return Material.CHEST;
+            default: return Material.BOOK;
+        }
+    }
+
+    private String formatString(String text) {
+        Component component = MiniMessage.miniMessage().deserialize(text);
+        return LegacyComponentSerializer.legacySection().serialize(component);
     }
 }

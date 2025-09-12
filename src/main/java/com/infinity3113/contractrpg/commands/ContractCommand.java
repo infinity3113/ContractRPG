@@ -25,8 +25,8 @@ public class ContractCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         
-        // Abrimos la GUI de contratos para el jugador
-        new ContractGUI(plugin, player).open();
+        // Abrimos el nuevo menú principal de la GUI
+        new ContractGUI(plugin, player).openMainMenu();
 
         return true;
     }

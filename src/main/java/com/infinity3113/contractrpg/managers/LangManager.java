@@ -9,6 +9,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.List;
 
 public class LangManager {
 
@@ -17,24 +18,35 @@ public class LangManager {
 
     public LangManager(ContractRPG plugin) {
         this.plugin = plugin;
-        loadLangFile();
+        loadLanguageFile();
     }
 
-    private void loadLangFile() {
-        // LEEMOS LA OPCIÓN DEL CONFIG.YML
-        String lang = plugin.getConfig().getString("language", "en");
+    private void loadLanguageFile() {
+        String lang = plugin.getConfig().getString("language", "es");
         File langFile = new File(plugin.getDataFolder(), "lang/" + lang + ".yml");
         if (!langFile.exists()) {
-            plugin.getLogger().warning("¡El archivo de idioma '" + lang + ".yml' no se encontró! Usando 'en.yml' por defecto.");
-            plugin.saveResource("lang/en.yml", false);
-            plugin.saveResource("lang/es.yml", false);
-            langFile = new File(plugin.getDataFolder(), "lang/en.yml"); // Fallback a inglés
+            plugin.getLogger().warning("No se encontró el archivo de idioma '" + lang + ".yml'. Usando 'es.yml' por defecto.");
+            langFile = new File(plugin.getDataFolder(), "lang/es.yml");
         }
         langConfig = YamlConfiguration.loadConfiguration(langFile);
     }
 
     public String getMessage(String path) {
-        return langConfig.getString("prefix", "") + langConfig.getString(path, "Message not found: " + path);
+        String message = langConfig.getString(path, "<#FF0000>Error: Mensaje no encontrado: " + path);
+        String prefix = langConfig.getString("prefix", "");
+        return message.replace("%prefix%", prefix);
+    }
+
+    // Método sobrecargado para aceptar un valor por defecto
+    public String getMessage(String path, String defaultValue) {
+        String message = langConfig.getString(path, defaultValue);
+        String prefix = langConfig.getString("prefix", "");
+        return message.replace("%prefix%", prefix);
+    }
+
+
+    public List<String> getStringList(String path) {
+        return langConfig.getStringList(path);
     }
 
     public void sendMessage(Player player, String path) {

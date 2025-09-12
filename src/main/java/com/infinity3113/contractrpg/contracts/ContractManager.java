@@ -115,21 +115,39 @@ public class ContractManager {
         PlayerData data = getPlayerData(player);
         if (data == null) return false;
 
-        int maxDaily = plugin.getConfig().getInt("daily-missions.selectable-amount", 2);
-        
-        long currentDailyAccepted = data.getActiveContracts().stream()
-                                        .filter(c -> c.getContractType() == ContractType.DAILY)
-                                        .count();
+        if (contract.getContractType() == ContractType.DAILY) {
+            int maxDaily = plugin.getConfig().getInt("daily-missions.selectable-amount", 2);
+            long currentDailyAccepted = data.getActiveContracts().stream()
+                    .filter(c -> c.getContractType() == ContractType.DAILY)
+                    .count();
 
-        if (currentDailyAccepted >= maxDaily) {
-            plugin.getLangManager().sendMessage(player, "contract_limit_reached");
-            return false;
-        }
+            if (currentDailyAccepted >= maxDaily) {
+                plugin.getLangManager().sendMessage(player, "contract_limit_reached");
+                return false;
+            }
 
-        if (data.getAvailableDailyContracts().contains(contract)) {
-            data.acceptContract(contract);
-            plugin.getLangManager().sendMessage(player, "contract_accepted");
-            return true;
+            if (data.getAvailableDailyContracts().contains(contract)) {
+                data.acceptContract(contract);
+                plugin.getLangManager().sendMessage(player, "contract_accepted");
+                return true;
+            }
+
+        } else if (contract.getContractType() == ContractType.WEEKLY) {
+            int maxWeekly = plugin.getConfig().getInt("weekly-missions.selectable-amount", 1);
+            long currentWeeklyAccepted = data.getActiveContracts().stream()
+                    .filter(c -> c.getContractType() == ContractType.WEEKLY)
+                    .count();
+
+            if (currentWeeklyAccepted >= maxWeekly) {
+                plugin.getLangManager().sendMessage(player, "contract_limit_reached");
+                return false;
+            }
+
+            if (data.getAvailableWeeklyContracts().contains(contract)) {
+                data.acceptContract(contract);
+                plugin.getLangManager().sendMessage(player, "contract_accepted");
+                return true;
+            }
         }
         
         return false;
@@ -154,7 +172,8 @@ public class ContractManager {
             String missionKey = contract.getMissionType().name();
             String missionFormat = plugin.getLangManager().getMessage("mission-formats." + missionKey);
             String targetKey = "translation-keys." + contract.getTarget().replace(":", ".");
-            String translatedTarget = plugin.getLangManager().getMessage(targetKey);
+            // ** CORRECCIÓN AQUÍ **
+            String translatedTarget = plugin.getLangManager().getMessage(targetKey, contract.getTarget());
             String missionName = missionFormat.replace("%amount%", "").replace("%target%", translatedTarget).trim();
 
             String actionBarFormat = plugin.getLangManager().getMessage("actionbar_progress");
@@ -169,12 +188,8 @@ public class ContractManager {
             player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(legacyMessage));
         }
     }
-    
-    public Contract parseContract(String contractString) {
-        return parseContract(contractString, ContractType.DAILY); 
-    }
 
-    private Contract parseContract(String contractString, ContractType contractType) {
+    public Contract parseContract(String contractString, ContractType contractType) {
         try {
             String[] parts = contractString.split(":");
             MissionType type = MissionType.valueOf(parts[0].toUpperCase());
