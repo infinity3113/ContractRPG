@@ -1,36 +1,40 @@
-# -------------------------------------------------- #
-#          Configuración de Contratos de ContractRPG           #
-# -------------------------------------------------- #
-#
-# Formatos de Misión:
-# KILL:TIPO_DE_MOB:CANTIDAD
-# KILL_MYTHIC:ID_MYTHIC_MOB:CANTIDAD
-# BREAK:TIPO_DE_BLOQUE:CANTIDAD
-# FARM:TIPO_DE_ITEM:CANTIDAD
-# DELIVER_MMOITEM:TIPO_MMOITEM:ID_MMOITEM:CANTIDAD
-#
-# Ejemplo: "KILL:ZOMBIE:10"
-# Ejemplo: "DELIVER_MMOITEM:MATERIAL:STEEL_INGOT:3"
-# Formato: TIPO:OBJETIVO:CANTIDAD:RECOMPENSA
 contracts:
-  daily:
-    EASY:
-      - "KILL:ZOMBIE:10:250.0"
-      - "KILL:SKELETON:10:250.0"
-      - "BREAK:STONE:64:150.50"
-      - "FARM:WHEAT:32:175.0"
-      - "BREAK:OAK_LOG:32:120.0"
-    MEDIUM:
-      - "KILL_MYTHIC:SkeletalKnight:5:750.0"
-      - "BREAK:DIAMOND_ORE:8:1000.0"
-      - "FARM:IRON_INGOT:16:500.0"
-      - "DELIVER_MMOITEM:MATERIAL:STEEL_INGOT:3:600.0"
-    HARD:
-      - "KILL_MYTHIC:AncientGolem:1:2500.0"
-      - "FARM:NETHERITE_SCRAP:4:3000.0"
-      - "KILL:BLAZE:10:1200.0"
-      - "DELIVER_MMOITEM:SWORD:CUTLASS:1:5000.0"
-  weekly:
-    - "KILL:WITHER:1:10000.0"
-    - "KILL:ENDER_DRAGON:1:15000.0"
-    - "BREAK:ANCIENT_DEBRIS:16:7500.0"
+  daily_hunt_zombies:
+    display-name: "<#FF5555>Daily: Zombie Slayer"
+    description:
+      - "<gray>Kill 20 Zombies."
+    contract-type: DAILY
+    mission-type: HUNTING
+    mission-objective: "ZOMBIE"
+    mission-requirement: 20
+    rewards:
+      - "eco give %player% 100"
+    level-requirement: 1
+
+  weekly_deliver_steel:
+    display-name: "<#55FFFF>Weekly: Steel Delivery"
+    description:
+      - "<gray>Deliver 10 Steel Ingots to the contractor."
+    contract-type: WEEKLY
+    mission-type: DELIVER_MMOITEM
+    # FORMATO: TIPO_DEL_ITEM:ID_DEL_ITEM
+    mission-objective: "MATERIAL:STEEL_INGOT"
+    mission-requirement: 10
+    rewards:
+      - "eco give %player% 1000"
+      - "mi give SWORD CUTLASS %player% 1"
+    level-requirement: 10
+
+  special_hunt_skeletor:
+    display-name: "<#AA00AA>Special: Hunt Skeletor"
+    description:
+      - "<gray>Defeat the fearsome MythicMob, Skeletor."
+    contract-type: SPECIAL
+    mission-type: HUNT_MYTHICMOB
+    # USA EL INTERNAL_NAME DEL MYTHICMOB
+    mission-objective: "Skeletor"
+    mission-requirement: 1
+    rewards:
+      - "eco give %player% 5000"
+      - "mi give GEM_STONE POWER_CRYSTAL %player% 3"
+    level-requirement: 25

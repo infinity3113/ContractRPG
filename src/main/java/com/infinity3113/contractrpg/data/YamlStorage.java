@@ -1,89 +1,72 @@
-package com.example.contractrpg.data;
+package com.infinity3113.contractrpg.data;
 
-import com.example.contractrpg.ContractRPG;
-import com.example.contractrpg.contracts.Contract;
-import com.example.contractrpg.contracts.ContractManager;
-import com.example.contractrpg.contracts.ContractType;
+import com.infinity3113.contractrpg.ContractRPG;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class YamlStorage extends StorageManager {
 
-    public YamlStorage(ContractRPG plugin, ContractManager contractManager) {
-        super(plugin, contractManager);
-    }
+    private final File dataFolder;
 
-    @Override
-    public void init() {
-        plugin.getLogger().info("Usando almacenamiento de datos YAML.");
-    }
-
-    @Override
-    public void shutdown() {
-        // No se requiere acción.
-    }
-
-    @Override
-    public void loadPlayerData(Player player) {
-        File playerFile = getPlayerFile(player.getUniqueId());
-        PlayerData playerData = new PlayerData(player.getUniqueId());
-
-        if (playerFile.exists()) {
-            FileConfiguration config = YamlConfiguration.loadConfiguration(playerFile);
-            playerData.setNextDailyReset(config.getLong("next-daily-reset", 0));
-            playerData.setNextWeeklyReset(config.getLong("next-weekly-reset", 0));
-
-            config.getStringList("active-contracts").forEach(contractString -> {
-                String[] parts = contractString.split(";", 3);
-                if (parts.length == 3) {
-                    ContractType type = ContractType.valueOf(parts[0]);
-                    Contract contract = contractManager.parseContract(parts[1], type);
-                    if (contract != null) {
-                        contract.setCurrentAmount(Integer.parseInt(parts[2]));
-                        playerData.addActiveContract(contract);
-                    }
-                }
-            });
-        }
-        contractManager.loadPlayerDataIntoMap(player, playerData);
-    }
-
-    @Override
-    public void savePlayerData(Player player) {
-        PlayerData playerData = contractManager.getPlayerData(player);
-        if (playerData == null) return;
-
-        File playerFile = getPlayerFile(player.getUniqueId());
-        FileConfiguration config = new YamlConfiguration();
-
-        config.set("next-daily-reset", playerData.getNextDailyReset());
-        config.set("next-weekly-reset", playerData.getNextWeeklyReset());
-
-        List<String> activeContractsStrings = playerData.getActiveContracts().stream()
-                .map(contract -> contract.getContractType().name() + ";" + contractToString(contract) + ";" + contract.getCurrentAmount())
-                .collect(Collectors.toList());
-        config.set("active-contracts", activeContractsStrings);
-
-        try {
-            config.save(playerFile);
-        } catch (IOException e) {
-            plugin.getLogger().severe("No se pudo guardar el archivo de datos para " + player.getName());
-            e.printStackTrace();
-        }
-    }
-
-    private File getPlayerFile(UUID uuid) {
-        File dataFolder = new File(plugin.getDataFolder(), "playerdata");
+    public YamlStorage(ContractRPG plugin) {
+        super(plugin);
+        this.dataFolder = new File(plugin.getDataFolder(), "playerdata");
         if (!dataFolder.exists()) {
             dataFolder.mkdirs();
         }
-        return new File(dataFolder, uuid.toString() + ".yml");
+    }
+
+    @Override
+    public void loadPlayerDataAsync(UUID uuid) {
+        // CORRECCIÓN: Lectura de archivo asíncrona.
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            File playerFile = new File(dataFolder, uuid.toString() + ".yml");
+            PlayerData playerData;
+            if (playerFile.exists()) {
+                FileConfiguration playerConfig = YamlConfiguration.loadConfiguration(playerFile);
+                playerData = new PlayerData(uuid);
+                playerData.setLevel(playerConfig.getInt("level", 1));
+                playerData.setExperience(playerConfig.getInt("experience", 0));
+                playerData.deserializeContracts(playerConfig.getString("contracts"));
+            } else {
+                playerData = new PlayerData(uuid);
+            }
+
+            final PlayerData finalPlayerData = playerData;
+            // Volvemos al hilo principal para añadir a la caché de forma segura.
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                addToCache(uuid, finalPlayerData);
+            });
+        });
+    }
+
+    @Override
+    public void savePlayerDataAsync(PlayerData playerData) {
+        // CORRECCIÓN: Escritura de archivo asíncrona.
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            savePlayerDataSync(playerData);
+        });
+    }
+
+    @Override
+    public void savePlayerDataSync(PlayerData playerData) {
+        File playerFile = new File(dataFolder, playerData.getUuid().toString() + ".yml");
+        FileConfiguration playerConfig = new YamlConfiguration();
+
+        playerConfig.set("level", playerData.getLevel());
+        playerConfig.set("experience", playerData.getExperience());
+        playerConfig.set("contracts", playerData.serializeContracts());
+
+        try {
+            playerConfig.save(playerFile);
+        } catch (IOException e) {
+            plugin.getLogger().severe("Could not save player data for " + playerData.getUuid().toString());
+            e.printStackTrace();
+        }
     }
 }

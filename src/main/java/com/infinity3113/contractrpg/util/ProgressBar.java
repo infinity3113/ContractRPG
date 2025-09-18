@@ -1,22 +1,16 @@
-package com.example.contractrpg.util;
+package com.infinity3113.contractrpg.util;
+
+import org.bukkit.ChatColor;
 
 public class ProgressBar {
+    public static String create(double current, double max, int totalBars, String barChar, String completedColor, String notCompletedColor) {
+        if (max == 0) max = 1; // Avoid division by zero
+        float percent = (float) (current / max);
+        int progressBars = (int) (totalBars * percent);
 
-    public static String create(int current, int max) {
-        if (max == 0) return "";
-        float percent = (float) current / max;
-        int progressBars = (int) (10 * percent);
-
-        StringBuilder bar = new StringBuilder();
-        bar.append("<#32CD32>");
-        for (int i = 0; i < progressBars; i++) {
-            bar.append("▌");
-        }
-        bar.append("<#808080>");
-        for (int i = 0; i < 10 - progressBars; i++) {
-            bar.append("▌");
-        }
-        bar.append(" <white>(").append(current).append("/").append(max).append(")");
-        return bar.toString();
+        return ChatColor.translateAlternateColorCodes('&',
+                completedColor + new String(new char[progressBars]).replace('\0', barChar.charAt(0)) +
+                notCompletedColor + new String(new char[totalBars - progressBars]).replace('\0', barChar.charAt(0))
+        );
     }
 }

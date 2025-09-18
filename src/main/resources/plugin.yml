@@ -1,23 +1,21 @@
 name: ContractRPG
-version: '1.0.0'
-main: com.example.contractrpg.ContractRPG
-api-version: '1.20'
-author: infinity3113
-description: Un sistema avanzado de contratos diarios y semanales con misiones RPG.
+version: '${project.version}'
+main: com.infinity3113.contractrpg.ContractRPG
+api-version: 1.20
+authors: [YourName]
+description: A plugin for daily, weekly, and special contracts.
+depend: [Citizens, Vault, MMOItems, MythicLib, MythicMobs]
 
 commands:
-  contracts:
-    description: Abre el panel de contratos.
-    usage: /contracts
-    aliases: [contratos, quests]
+  contract:
+    description: Opens the contract GUI or reloads the plugin.
+    usage: /contract [reload]
+    permission: contractrpg.use
 
-# Dependencias Requeridas: El plugin NO funcionará sin estas.
-depend:
-  - Vault
-  - MMOItems
-  - MythicLib
-
-# Dependencias Opcionales: El plugin funcionará, pero con características desactivadas.
-softdepend:
-  - Citizens
-  - MythicMobs
+permissions:
+  contractrpg.use:
+    description: Allows player to use /contract command.
+    default: true
+  contractrpg.reload:
+    description: Allows player to use /contract reload.
+    default: op

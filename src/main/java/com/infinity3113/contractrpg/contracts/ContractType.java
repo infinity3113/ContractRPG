@@ -1,6 +1,7 @@
-package com.example.contractrpg.contracts;
+package com.infinity3113.contractrpg.contracts;
 
 public enum ContractType {
     DAILY,
-    WEEKLY
+    WEEKLY,
+    SPECIAL
 }
