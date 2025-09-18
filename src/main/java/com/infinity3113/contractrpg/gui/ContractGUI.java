@@ -5,9 +5,9 @@ import com.infinity3113.contractrpg.contracts.Contract;
 import com.infinity3113.contractrpg.contracts.ContractManager;
 import com.infinity3113.contractrpg.contracts.ContractType;
 import com.infinity3113.contractrpg.data.PlayerData;
+import com.infinity3113.contractrpg.util.MessageUtils;
 import com.infinity3113.contractrpg.util.ProgressBar;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -31,14 +31,15 @@ public class ContractGUI {
     }
 
     public void open() {
-        Inventory gui = Bukkit.createInventory(null, 54, plugin.getLangManager().getMessage("gui-title"));
+        // Usa el método de parseo de MessageUtils para el título
+        Inventory gui = Bukkit.createInventory(null, 54, MessageUtils.parse(plugin.getLangManager().getMessage("gui-title")));
         
-        // Populate GUI with items
+        // Poblar la GUI con los ítems
         addContractItems(gui, ContractType.DAILY, 10);
         addContractItems(gui, ContractType.WEEKLY, 19);
         addContractItems(gui, ContractType.SPECIAL, 28);
         
-        // Add decorative panes
+        // Añadir paneles decorativos
         ItemStack grayPane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = grayPane.getItemMeta();
         meta.setDisplayName(" ");
@@ -63,28 +64,31 @@ public class ContractGUI {
         for (Contract contract : contracts) {
             ItemStack item = new ItemStack(Material.WRITABLE_BOOK);
             ItemMeta meta = item.getItemMeta();
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', contract.getDisplayName()));
+            
+            // CORRECCIÓN: Usar MessageUtils.parse() para procesar colores modernos
+            meta.setDisplayName(MessageUtils.parse(contract.getDisplayName()));
             
             List<String> lore = new ArrayList<>();
             for(String line : contract.getDescription()){
-                lore.add(ChatColor.translateAlternateColorCodes('&', line));
+                // CORRECCIÓN: Usar MessageUtils.parse() aquí también
+                lore.add(MessageUtils.parse(line));
             }
             lore.add(" ");
 
             if (activeContracts.containsKey(contract.getId())) {
-                lore.add(ChatColor.YELLOW + "Status: " + ChatColor.GOLD + "In Progress");
+                lore.add(MessageUtils.parse("<yellow>Status: <gold>En Progreso"));
                 int progress = playerData.getContractProgress(contract.getId());
                 int total = contract.getMissionRequirement();
                 lore.add(ProgressBar.create(progress, total, 20, "|", "&a", "&c"));
             } else {
-                 lore.add(ChatColor.YELLOW + "Status: " + ChatColor.GREEN + "Available");
+                 lore.add(MessageUtils.parse("<yellow>Status: <green>Disponible"));
             }
             
             meta.setLore(lore);
             item.setItemMeta(meta);
             gui.setItem(slot, item);
             slot++;
-            if((slot + 1) % 9 == 0) slot += 2; // Move to next row
+            if((slot + 1) % 9 == 0) slot += 2; // Mover a la siguiente fila
         }
     }
 }

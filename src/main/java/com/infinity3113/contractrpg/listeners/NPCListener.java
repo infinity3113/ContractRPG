@@ -5,9 +5,7 @@ import com.infinity3113.contractrpg.contracts.Contract;
 import com.infinity3113.contractrpg.contracts.MissionType;
 import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.gui.ContractGUI;
-import net.Indyuce.mmoitems.MMOItems;
-import net.Indyuce.mmoitems.api.Type;
-import net.Indyuce.mmoitems.api.item.NBTItem;
+import io.lumine.mythic.lib.api.item.NBTItem;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -26,10 +24,10 @@ public class NPCListener implements Listener {
     @EventHandler
     public void onNPCRightClick(NPCRightClickEvent event) {
         Player player = event.getClicker();
-        int npcId = plugin.getConfig().getInt("contract-npc-id");
+        // CORRECCIÓN: Se usa la clave correcta "delivery-npc-id" para que coincida con config.yml
+        int npcId = plugin.getConfig().getInt("delivery-npc-id");
 
         if (event.getNPC().getId() == npcId) {
-            // AÑADIDO: Lógica para entregar MMOItems
             // Intenta procesar una entrega de item. Si devuelve 'true', significa que se entregó algo.
             boolean delivered = tryDeliverMmoItem(player);
 
@@ -46,9 +44,9 @@ public class NPCListener implements Listener {
             return false; // No tiene nada en la mano
         }
 
-        NBTItem nbtItem = MMOItems.inst().getNBTItem(itemInHand);
-        if (nbtItem == null) {
-            return false; // No es un MMOItem
+        NBTItem nbtItem = NBTItem.get(itemInHand);
+        if (nbtItem == null || !nbtItem.hasType()) {
+            return false; // No es un MMOItem válido
         }
         
         String mmoType = nbtItem.getType();

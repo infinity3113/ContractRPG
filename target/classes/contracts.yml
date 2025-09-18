@@ -1,8 +1,9 @@
 contracts:
+  # --- MISIONES DIARIAS ---
   daily_hunt_zombies:
-    display-name: "<#FF5555>Daily: Zombie Slayer"
+    display-name: "<#FF5555>Diaria: Cazador de Zombis"
     description:
-      - "<gray>Kill 20 Zombies."
+      - "<gray>Derrota a 20 Zombis."
     contract-type: DAILY
     mission-type: HUNTING
     mission-objective: "ZOMBIE"
@@ -11,13 +12,61 @@ contracts:
       - "eco give %player% 100"
     level-requirement: 1
 
-  weekly_deliver_steel:
-    display-name: "<#55FFFF>Weekly: Steel Delivery"
+  daily_mine_iron:
+    display-name: "<#FF5555>Diaria: Minero de Hierro"
     description:
-      - "<gray>Deliver 10 Steel Ingots to the contractor."
+      - "<gray>Extrae 32 menas de hierro."
+    contract-type: DAILY
+    mission-type: MINING
+    mission-objective: "IRON_ORE"
+    mission-requirement: 32
+    rewards:
+      - "eco give %player% 150"
+    level-requirement: 5
+
+  daily_hunt_skeletons:
+    display-name: "<#FF5555>Diaria: Pesadilla Ósea"
+    description:
+      - "<gray>Aniquila a 25 esqueletos."
+    contract-type: DAILY
+    mission-type: HUNTING
+    mission-objective: "SKELETON"
+    mission-requirement: 25
+    rewards:
+      - "eco give %player% 120"
+    level-requirement: 3
+
+  daily_chop_wood:
+    display-name: "<#FF5555>Diaria: Leñador"
+    description:
+      - "<gray>Consigue 64 troncos de roble."
+    contract-type: DAILY
+    mission-type: MINING
+    mission-objective: "OAK_LOG"
+    mission-requirement: 64
+    rewards:
+      - "eco give %player% 80"
+    level-requirement: 1
+  
+  daily_farm_wheat:
+    display-name: "<#FF5555>Diaria: El Granjero"
+    description:
+      - "<gray>Cosecha 40 de trigo."
+    contract-type: DAILY
+    mission-type: MINING
+    mission-objective: "WHEAT"
+    mission-requirement: 40
+    rewards:
+      - "eco give %player% 90"
+    level-requirement: 2
+
+  # --- MISIONES SEMANALES ---
+  weekly_deliver_steel:
+    display-name: "<#55FFFF>Semanal: Entrega de Acero"
+    description:
+      - "<gray>Entrega 10 Lingotes de Acero."
     contract-type: WEEKLY
     mission-type: DELIVER_MMOITEM
-    # FORMATO: TIPO_DEL_ITEM:ID_DEL_ITEM
     mission-objective: "MATERIAL:STEEL_INGOT"
     mission-requirement: 10
     rewards:
@@ -25,13 +74,39 @@ contracts:
       - "mi give SWORD CUTLASS %player% 1"
     level-requirement: 10
 
-  special_hunt_skeletor:
-    display-name: "<#AA00AA>Special: Hunt Skeletor"
+  weekly_mine_diamonds:
+    display-name: "<#55FFFF>Semanal: Fiebre de Diamantes"
     description:
-      - "<gray>Defeat the fearsome MythicMob, Skeletor."
+      - "<gray>Encuentra y extrae 15 diamantes."
+    contract-type: WEEKLY
+    mission-type: MINING
+    mission-objective: "DIAMOND_ORE"
+    mission-requirement: 15
+    rewards:
+      - "eco give %player% 1200"
+      - "exp give %player% 500"
+    level-requirement: 15
+  
+  weekly_hunt_mythic_golem:
+    display-name: "<#55FFFF>Semanal: Bestia de Piedra"
+    description:
+      - "<gray>Derrota al poderoso Golem Antiguo."
+    contract-type: WEEKLY
+    mission-type: HUNT_MYTHICMOB
+    mission-objective: "AncientGolem"
+    mission-requirement: 1
+    rewards:
+      - "eco give %player% 2500"
+      - "mi give MATERIAL REFINED_DIAMOND %player% 2"
+    level-requirement: 20
+
+  # --- MISIONES ESPECIALES ---
+  special_hunt_skeletor:
+    display-name: "<#AA00AA>Especial: Caza a Skeletor"
+    description:
+      - "<gray>Derrota al temible MythicMob, Skeletor."
     contract-type: SPECIAL
     mission-type: HUNT_MYTHICMOB
-    # USA EL INTERNAL_NAME DEL MYTHICMOB
     mission-objective: "Skeletor"
     mission-requirement: 1
     rewards:

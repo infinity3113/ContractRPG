@@ -32,41 +32,47 @@ public class ContractCommand implements CommandExecutor {
 
         Player player = (Player) sender;
 
-        if (args.length == 0) {
-            new ContractGUI(plugin, player).open();
-            return true;
-        }
+        if (args.length > 0) {
+            // Subcomando de recarga
+            if (args[0].equalsIgnoreCase("reload")) {
+                if (!player.hasPermission("contractrpg.reload")) {
+                    player.sendMessage(langManager.getMessage("no-permission"));
+                    return true;
+                }
+                plugin.reloadConfig();
+                plugin.getLangManager().loadLanguages();
+                plugin.getContractManager().loadContracts();
 
-        if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
-            if (!player.hasPermission("contractrpg.reload")) {
-                player.sendMessage(langManager.getMessage("no-permission"));
-                return true;
-            }
-
-            plugin.reloadConfig();
-            plugin.getLangManager().loadLanguages();
-            plugin.getContractManager().loadContracts();
-
-            // CORRECCIÓN: Se valida los contratos de los jugadores en línea después de una recarga.
-            // Esto evita errores si un contrato que un jugador tenía activo es eliminado.
-            for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(onlinePlayer.getUniqueId());
-                if (playerData != null) {
-                    Set<String> activeContractsCopy = new HashSet<>(playerData.getActiveContracts().keySet());
-                    for (String contractId : activeContractsCopy) {
-                        if (plugin.getContractManager().getContract(contractId) == null) {
-                            playerData.removeContract(contractId);
-                            onlinePlayer.sendMessage(langManager.getMessage("contract-removed-on-reload").replace("%contract%", contractId));
+                for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
+                    PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(onlinePlayer.getUniqueId());
+                    if (playerData != null) {
+                        Set<String> activeContractsCopy = new HashSet<>(playerData.getActiveContracts().keySet());
+                        for (String contractId : activeContractsCopy) {
+                            if (plugin.getContractManager().getContract(contractId) == null) {
+                                playerData.removeContract(contractId);
+                                onlinePlayer.sendMessage(langManager.getMessage("contract-removed-on-reload").replace("%contract%", contractId));
+                            }
                         }
                     }
                 }
+                player.sendMessage(langManager.getMessage("plugin-reloaded"));
+                return true;
             }
 
-
-            player.sendMessage(langManager.getMessage("plugin-reloaded"));
-            return true;
+            // ¡NUEVO! Subcomando de reseteo
+            if (args[0].equalsIgnoreCase("reset")) {
+                if (!player.hasPermission("contractrpg.admin.reset")) {
+                    player.sendMessage(langManager.getMessage("no-permission"));
+                    return true;
+                }
+                plugin.performMissionReset();
+                player.sendMessage(langManager.getMessage("missions-manually-reset"));
+                return true;
+            }
         }
 
+        // Si no hay argumentos o no coinciden, abre la GUI
+        new ContractGUI(plugin, player).open();
         return true;
     }
 }

@@ -9,7 +9,7 @@ depend: [Citizens, Vault, MMOItems, MythicLib, MythicMobs]
 commands:
   contract:
     description: Opens the contract GUI or reloads the plugin.
-    usage: /contract [reload]
+    usage: /contract [reload|reset] # Añadido 'reset'
     permission: contractrpg.use
 
 permissions:
@@ -18,4 +18,8 @@ permissions:
     default: true
   contractrpg.reload:
     description: Allows player to use /contract reload.
+    default: op
+  # ¡NUEVO! Permiso para el reset
+  contractrpg.admin.reset:
+    description: Allows forcing a mission reset for testing.
     default: op

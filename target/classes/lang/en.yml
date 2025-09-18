@@ -1,48 +1,70 @@
+# General Messages
 prefix: "<gray>[<gold>ContractRPG<gray>] "
+contracts_offered: "%prefix%<green>New daily contracts are available! Use /contracts to see them."
+contract_accepted: "%prefix%<green>Contract accepted! Check your progress in /contracts."
+contract_completed: "%prefix%<gold>Contract completed! You have received %reward% as a reward."
+contract_limit_reached: "%prefix%<red>You have reached the active contract limit."
+daily_mission_progress_lost: "%prefix%<yellow>Your progress on uncompleted daily missions has been reset."
+weekly_mission_progress_lost: "%prefix%<yellow>Your progress on your uncompleted weekly mission has been reset."
+actionbar_progress: "<#32CD32>Mission Progress: <white>%mission% (%current%/%required%)"
 
-# --- General Messages ---
-contract_accepted: "<green>Contract accepted! Check your progress with /contracts."
-contract_limit_reached: "<red>You have already accepted the maximum number of daily contracts."
-no_active_contracts: "<gray>You have no active contracts."
-contracts_offered: "<green>New daily contracts are available! Use /contracts to see them."
-contract_completed: "<gold>Contract completed! You have received <yellow>%reward%</yellow>."
-daily_mission_progress_lost: "<c>Oh no! You lost progress on your daily missions for not completing them in time. Accept new ones and make sure to finish them!"
-weekly_mission_progress_lost: "<c>Oh no! You lost your progress on the weekly mission. You'll get another chance next week!"
-
-
-# --- GUI ---
-gui_title: "Contracts Panel"
-gui_available_title: "<green>Available Contracts <gray>(%accepted%/%max%)"
-gui_active_title: "<yellow>Active Contracts"
-gui_click_to_accept: "<gray>» <white>Click to accept!"
-gui_reward: "<gold>Reward: <yellow>%reward%"
-gui_progress: "<gray>Progress: <green>%current%<gray>/<green>%required%"
-
-# --- Mission Formats ---
+# Mission Formats
 mission-formats:
   KILL: "Kill %amount% %target%"
   KILL_MYTHIC: "Slay %amount% %target%"
-  BREAK: "Mine %amount% %target% blocks"
+  BREAK: "Break %amount% %target%"
   FARM: "Obtain %amount% %target%"
   DELIVER_MMOITEM: "Deliver %amount% %target%"
 
-# --- Action Bar ---
-actionbar_progress: "<green>%mission%: <yellow>%current%<gray>/<yellow>%required%"
-
-# --- NPC Messages ---
-npc_delivery_greet: "<yellow>Hello! If you have a contract item to deliver, hold it in your hand and talk to me!"
-npc_delivery_not_mmoitem: "<red>This doesn't seem to be a special contract item."
-npc_delivery_wrong_item: "<red>I don't need this item right now. Check your active contracts."
-
-# --- Translation Keys ---
+# Translation keys for objectives (Example)
 translation-keys:
   ZOMBIE: "Zombies"
   SKELETON: "Skeletons"
-  SkeletalKnight: "<red>Skeletal Knight</red>"
-  AncientGolem: "<dark_red>Ancient Golem</dark_red>"
+  SkeletalKnight: "Skeletal Knights"
+  AncientGolem: "Ancient Golem"
   STONE: "Stone"
   DIAMOND_ORE: "Diamond Ore"
   OAK_LOG: "Oak Log"
   WHEAT: "Wheat"
-  "MATERIAL.STEEL_INGOT": "<aqua>Steel Ingot</aqua>"
-  "SWORD.CUTLASS": "<light_purple>Cutlass</light_purple>"
+  "MATERIAL.STEEL_INGOT": "Steel Ingot"
+  "SWORD.CUTLASS": "Cutlass"
+
+# --- GUI Texts ---
+gui:
+  main_menu:
+    title: "Contracts Panel"
+    active_contracts:
+      name: "<#FFD700>Active Contracts"
+      lore:
+        - "<gray>Check the progress of your"
+        - "<gray>accepted contracts."
+    daily_contracts:
+      name: "<#32CD32>Daily Contracts"
+      lore:
+        - "<gray>Accept new contracts that"
+        - "<gray>reset every 24h."
+    weekly_contracts:
+      name: "<#1E90FF>Weekly Contracts"
+      lore:
+        - "<gray>Accept a higher reward"
+        - "<gray>contract every 7 days."
+  active_contracts:
+    title: "My Active Contracts"
+  daily_contracts:
+    title: "Available Daily Contracts"
+  weekly_contracts:
+    title: "Available Weekly Contracts"
+  back_button:
+    name: "<red>Back to Menu"
+    lore:
+      - "<gray>Click to return."
+  item:
+    contract_title: "<green>Available Contract"
+    reward: "<gold>Reward: <white>%reward%"
+    click_to_accept: "<yellow>Click to accept!"
+
+# --- Admin Messages ---
+no-permission: "%prefix%<red>You do not have permission to execute that command."
+plugin-reloaded: "%prefix%<green>The plugin has been reloaded."
+contract-removed-on-reload: "%prefix%<yellow>The contract '%contract%' was removed as it no longer exists."
+missions-manually-reset: "%prefix%<green>You have forced a mission reset for all online players."

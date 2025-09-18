@@ -8,6 +8,14 @@ daily_mission_progress_lost: "%prefix%<yellow>El progreso de tus misiones diaria
 weekly_mission_progress_lost: "%prefix%<yellow>El progreso de tu misión semanal no completada ha sido reiniciado."
 actionbar_progress: "<#32CD32>Progreso de Misión: <white>%mission% (%current%/%required%)"
 
+# --- GUI ---
+gui-title: "Panel de Contratos"
+gui_available_title: "<green>Contratos Disponibles <gray>(%accepted%/%max%)"
+gui_active_title: "<yellow>Contratos Activos"
+gui_click_to_accept: "<gray>» <white>¡Haz clic para aceptar!"
+gui_reward: "<gold>Recompensa: <yellow>%reward%"
+gui_progress: "<gray>Progreso: <green>%current%<gray>/<green>%required%"
+
 # Formatos de Misión
 mission-formats:
   KILL: "Matar %amount% de %target%"
@@ -16,43 +24,15 @@ mission-formats:
   FARM: "Obtener %amount% de %target%"
   DELIVER_MMOITEM: "Entregar %amount% de %target%"
 
-# Claves de traducción para objetivos (Ejemplo)
+# Claves de traducción para objetivos
 translation-keys:
   ZOMBIE: "Zombis"
   SKELETON: "Esqueletos"
   SkeletalKnight: "Caballeros Esqueléticos"
-  # ... añade más según los necesites
+  AncientGolem: "Golem Antiguo"
 
-# --- NUEVOS TEXTOS PARA LA GUI ---
-gui:
-  main_menu:
-    title: "Panel de Contratos"
-    active_contracts:
-      name: "<#FFD700>Contratos Activos"
-      lore:
-        - "<gray>Revisa el progreso de tus"
-        - "<gray>contratos aceptados."
-    daily_contracts:
-      name: "<#32CD32>Contratos Diarios"
-      lore:
-        - "<gray>Acepta nuevos contratos"
-        - "<gray>que se reinician cada 24h."
-    weekly_contracts:
-      name: "<#1E90FF>Contratos Semanales"
-      lore:
-        - "<gray>Acepta un contrato de mayor"
-        - "<gray>recompensa cada 7 días."
-  active_contracts:
-    title: "Mis Contratos Activos"
-  daily_contracts:
-    title: "Contratos Diarios Disponibles"
-  weekly_contracts:
-    title: "Contratos Semanales Disponibles"
-  back_button:
-    name: "<red>Volver al Menú"
-    lore:
-      - "<gray>Haz clic para regresar."
-  item:
-    contract_title: "<green>Contrato Disponible"
-    reward: "<gold>Recompensa: <white>%reward%"
-    click_to_accept: "<yellow>¡Haz clic para aceptar!"
+# --- Mensajes de Administrador ---
+no-permission: "%prefix%<red>No tienes permiso para ejecutar ese comando."
+plugin-reloaded: "%prefix%<green>El plugin ha sido recargado."
+contract-removed-on-reload: "%prefix%<yellow>El contrato '%contract%' fue eliminado ya que no existe."
+missions-manually-reset: "%prefix%<green>Has forzado el reinicio de las misiones para todos los jugadores conectados."
