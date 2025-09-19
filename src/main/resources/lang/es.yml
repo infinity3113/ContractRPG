@@ -14,13 +14,13 @@ actionbar_progress: "<#32CD32>Progreso de Misión: <white>%mission% (%current%/%
 level_up: "%prefix%<bold><#32CD32>¡Has subido al Nivel %level%!</bold>"
 exp_gain: "%prefix%<gray>Has ganado <#FFFF55>%exp% puntos de experiencia."
 stats_message:
-  - "<strikethrough>                                                                                </strikethrough>"
-  - "<#FFD700>                              Estadísticas de Contratos"
+  - "<strikethrough>                                                                        </strikethrough>"
+  - "<#FFD700>                           Estadísticas de Contratos"
   - ""
   - "    <gray>Nivel: <green>%level%"
   - "    <gray>Experiencia: <yellow>%current_exp%<gray> / <gray>%required_exp%"
   - ""
-  - "<strikethrough>                                                                                </strikethrough>"
+  - "<strikethrough>                                                                        </strikethrough>"
 
 # --- Textos para la GUI ---
 # Menú Principal
@@ -114,3 +114,7 @@ no-permission: "%prefix%<red>No tienes permiso para ejecutar ese comando."
 plugin-reloaded: "%prefix%<green>El plugin ha sido recargado."
 contract-removed-on-reload: "%prefix%<yellow>El contrato '%contract%' fue eliminado ya que no existe."
 missions-manually-reset: "%prefix%<green>Has forzado el reinicio de las misiones para todos los jugadores conectados."
+
+# ===== LÍNEAS AÑADIDAS PARA EL COMANDO /contract placeholder =====
+placeholder-list-header: "<aqua>Placeholders Disponibles:"
+placeholder-list-format: "<gray>- <white>%placeholder%"

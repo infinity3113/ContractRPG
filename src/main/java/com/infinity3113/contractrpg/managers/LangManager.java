@@ -77,4 +77,9 @@ public class LangManager {
         String message = getMessageFromFile(path);
         return message.replace("%prefix%", this.prefix);
     }
+
+    // MÉTODO AÑADIDO PARA SOLUCIONAR EL ERROR
+    public String getTranslation(String path) {
+        return getMessage(path);
+    }
 }

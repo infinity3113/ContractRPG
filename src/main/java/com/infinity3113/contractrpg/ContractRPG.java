@@ -31,6 +31,7 @@ public final class ContractRPG extends JavaPlugin {
     private LangManager langManager;
     private StorageManager storageManager;
     private GUIManager guiManager;
+    private PlaceholderManager placeholderManager; // <-- 1. CAMPO AÑADIDO
 
     @Override
     public void onEnable() {
@@ -69,7 +70,8 @@ public final class ContractRPG extends JavaPlugin {
         }
         
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            new PlaceholderManager(this).register();
+            this.placeholderManager = new PlaceholderManager(this); // <-- 2. ASIGNACIÓN AÑADIDA
+            this.placeholderManager.register();
             getLogger().info("Successfully hooked into PlaceholderAPI.");
         }
 
@@ -193,4 +195,5 @@ public final class ContractRPG extends JavaPlugin {
     public LangManager getLangManager() { return langManager; }
     public StorageManager getStorageManager() { return storageManager; }
     public GUIManager getGuiManager() { return guiManager; }
+    public PlaceholderManager getPlaceholderManager() { return placeholderManager; } // <-- 3. GETTER AÑADIDO
 }

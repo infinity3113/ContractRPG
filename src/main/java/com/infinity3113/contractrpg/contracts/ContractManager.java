@@ -71,4 +71,11 @@ public class ContractManager {
         }
         return result;
     }
+    
+    // MÉTODO AÑADIDO PARA SOLUCIONAR EL ERROR
+    public String getFormattedMission(Contract contract) {
+        String missionObjective = contract.getMissionObjective();
+        String translatedObjective = plugin.getLangManager().getMessage(missionObjective);
+        return translatedObjective.replace("%amount%", String.valueOf(contract.getMissionRequirement()));
+    }
 }

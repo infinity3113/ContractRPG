@@ -2,7 +2,7 @@ name: ContractRPG
 version: '${project.version}'
 main: com.infinity3113.contractrpg.ContractRPG
 api-version: 1.20
-authors: [YourName]
+authors: [infinity3113]
 description: A plugin for daily, weekly, and special contracts.
 depend: [Citizens, Vault, MMOItems, MythicLib, MythicMobs]
 softdepend:
@@ -23,4 +23,8 @@ permissions:
   # ¡NUEVO! Permiso para el reset
   contractrpg.admin.reset:
     description: Allows forcing a mission reset for testing.
+    default: op
+  # ===== PERMISO AÑADIDO =====
+  contractrpg.command.placeholder:
+    description: "Allows viewing the list of available placeholders."
     default: op

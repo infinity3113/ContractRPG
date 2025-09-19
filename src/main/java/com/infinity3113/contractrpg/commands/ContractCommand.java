@@ -41,20 +41,6 @@ public class ContractCommand implements CommandExecutor {
                 }
                 plugin.reloadConfig();
                 plugin.getLangManager().loadLanguages();
-                plugin.getContractManager().loadContracts();
-
-                for (Player onlinePlayer : Bukkit.getOnlinePlayers()) {
-                    PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(onlinePlayer.getUniqueId());
-                    if (playerData != null) {
-                        Set<String> activeContractsCopy = new HashSet<>(playerData.getActiveContracts().keySet());
-                        for (String contractId : activeContractsCopy) {
-                            if (plugin.getContractManager().getContract(contractId) == null) {
-                                playerData.removeContract(contractId);
-                                MessageUtils.sendMessage(onlinePlayer, langManager.getMessage("contract-removed-on-reload").replace("%contract%", contractId));
-                            }
-                        }
-                    }
-                }
                 MessageUtils.sendMessage(player, langManager.getMessage("plugin-reloaded"));
                 return true;
             }
@@ -68,6 +54,30 @@ public class ContractCommand implements CommandExecutor {
                 MessageUtils.sendMessage(player, langManager.getMessage("missions-manually-reset"));
                 return true;
             }
+
+            // ===== BLOQUE DE CÓDIGO AÑADIDO Y CORREGIDO =====
+            if (args[0].equalsIgnoreCase("placeholder") || args[0].equalsIgnoreCase("placeholders")) {
+                if (!player.hasPermission("contractrpg.command.placeholder")) {
+                    MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
+                    return true;
+                }
+                // Verificamos que PlaceholderAPI esté activo para evitar errores
+                if (plugin.getPlaceholderManager() == null) {
+                    player.sendMessage(MessageUtils.parse("&cPlaceholderAPI is not enabled on the server."));
+                    return true;
+                }
+                List<String> placeholders = plugin.getPlaceholderManager().getPlaceholders();
+                // Usamos el método de envío de mensajes que ya tienes para el encabezado
+                MessageUtils.sendMessage(player, langManager.getMessage("placeholder-list-header"));
+                for (String placeholder : placeholders) {
+                    String formattedPlaceholder = langManager.getMessage("placeholder-list-format")
+                            .replace("%placeholder%", placeholder);
+                    // Enviamos cada línea sin el prefijo, usando tu MessageUtils para los colores
+                    player.sendMessage(MessageUtils.parse(formattedPlaceholder));
+                }
+                return true;
+            }
+            // ===== FIN DEL BLOQUE AÑADIDO =====
             
             if (args[0].equalsIgnoreCase("stats")) {
                 PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
