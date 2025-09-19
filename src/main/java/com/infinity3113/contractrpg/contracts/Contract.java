@@ -26,6 +26,8 @@ public class Contract {
         this.levelRequirement = levelRequirement;
     }
 
+    // --- ¡MÉTODO AÑADIDO! ---
+    // Este método faltaba y causaba el error de compilación.
     public String getId() {
         return id;
     }

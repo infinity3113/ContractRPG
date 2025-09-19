@@ -1,5 +1,4 @@
 com\infinity3113\contractrpg\data\YamlStorage.class
-com\infinity3113\contractrpg\data\SqliteStorage.class
 com\infinity3113\contractrpg\commands\ContractCommand.class
 com\infinity3113\contractrpg\contracts\MissionType.class
 com\infinity3113\contractrpg\listeners\PlayerListener.class
@@ -8,7 +7,6 @@ com\infinity3113\contractrpg\util\MessageUtils.class
 com\infinity3113\contractrpg\listeners\MythicMobListener.class
 com\infinity3113\contractrpg\contracts\Contract.class
 com\infinity3113\contractrpg\util\ProgressBar.class
-com\infinity3113\contractrpg\listeners\NPCListener.class
 com\infinity3113\contractrpg\ContractRPG.class
 com\infinity3113\contractrpg\ContractRPG$1.class
 com\infinity3113\contractrpg\contracts\ContractManager.class
@@ -20,3 +18,4 @@ com\infinity3113\contractrpg\managers\LangManager.class
 com\infinity3113\contractrpg\data\PlayerData$1.class
 com\infinity3113\contractrpg\data\StorageManager.class
 com\infinity3113\contractrpg\data\PlayerData.class
+com\infinity3113\contractrpg\data\PlayerData$2.class

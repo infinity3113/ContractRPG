@@ -23,13 +23,22 @@ public class SqliteStorage extends StorageManager {
             connection = DriverManager.getConnection(url);
 
             try (Statement stmt = connection.createStatement()) {
+                // Actualizar la tabla para incluir los nuevos campos
                 String sql = "CREATE TABLE IF NOT EXISTS player_data (" +
                         "uuid TEXT PRIMARY KEY NOT NULL," +
                         "level INTEGER NOT NULL," +
                         "experience INTEGER NOT NULL," +
-                        "contracts TEXT" +
+                        "active_contracts TEXT," +
+                        "completed_daily TEXT," +
+                        "completed_weekly TEXT" +
                         ");";
                 stmt.execute(sql);
+                
+                // Asegurarse de que las columnas existan si la tabla ya fue creada
+                addColumnIfNotExists("completed_daily", "TEXT");
+                addColumnIfNotExists("completed_weekly", "TEXT");
+                // Renombrar columna antigua si es necesario (opcional, pero buena práctica)
+                // renameColumnIfExists("contracts", "active_contracts", "TEXT");
             }
         } catch (SQLException e) {
             plugin.getLogger().severe("Could not connect to SQLite database!");
@@ -39,10 +48,9 @@ public class SqliteStorage extends StorageManager {
 
     @Override
     public void loadPlayerDataAsync(UUID uuid) {
-        // CORRECCIÓN: La operación de base de datos se ejecuta en un hilo secundario.
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             PlayerData playerData = null;
-            String sql = "SELECT level, experience, contracts FROM player_data WHERE uuid = ?";
+            String sql = "SELECT level, experience, active_contracts, completed_daily, completed_weekly FROM player_data WHERE uuid = ?";
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, uuid.toString());
                 ResultSet rs = pstmt.executeQuery();
@@ -50,7 +58,10 @@ public class SqliteStorage extends StorageManager {
                     playerData = new PlayerData(uuid);
                     playerData.setLevel(rs.getInt("level"));
                     playerData.setExperience(rs.getInt("experience"));
-                    playerData.deserializeContracts(rs.getString("contracts"));
+                    
+                    playerData.deserializeActiveContracts(rs.getString("active_contracts"));
+                    playerData.deserializeCompletedDaily(rs.getString("completed_daily"));
+                    playerData.deserializeCompletedWeekly(rs.getString("completed_weekly"));
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error loading data for " + uuid.toString());
@@ -59,7 +70,6 @@ public class SqliteStorage extends StorageManager {
 
             final PlayerData finalPlayerData = (playerData != null) ? playerData : new PlayerData(uuid);
 
-            // Una vez cargados los datos, los añadimos a la caché en el hilo principal.
             Bukkit.getScheduler().runTask(plugin, () -> {
                 addToCache(uuid, finalPlayerData);
             });
@@ -69,7 +79,6 @@ public class SqliteStorage extends StorageManager {
 
     @Override
     public void savePlayerDataAsync(PlayerData playerData) {
-        // CORRECCIÓN: Guardado asíncrono.
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             savePlayerDataSync(playerData);
         });
@@ -77,16 +86,37 @@ public class SqliteStorage extends StorageManager {
 
     @Override
     public void savePlayerDataSync(PlayerData playerData) {
-        String sql = "INSERT OR REPLACE INTO player_data (uuid, level, experience, contracts) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT OR REPLACE INTO player_data (uuid, level, experience, active_contracts, completed_daily, completed_weekly) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, playerData.getUuid().toString());
             pstmt.setInt(2, playerData.getLevel());
             pstmt.setInt(3, playerData.getExperience());
-            pstmt.setString(4, playerData.serializeContracts());
+            pstmt.setString(4, playerData.serializeActiveContracts());
+            pstmt.setString(5, playerData.serializeCompletedDaily());
+            pstmt.setString(6, playerData.serializeCompletedWeekly());
             pstmt.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().severe("Error saving data for " + playerData.getUuid().toString());
             e.printStackTrace();
+        }
+    }
+    
+    // Método de ayuda para añadir columnas a una tabla existente sin errores
+    private void addColumnIfNotExists(String columnName, String columnType) {
+        try {
+            DatabaseMetaData md = connection.getMetaData();
+            ResultSet rs = md.getColumns(null, null, "player_data", columnName);
+            if (!rs.next()) { // Si la columna no existe, la añade
+                try (Statement stmt = connection.createStatement()) {
+                    stmt.execute("ALTER TABLE player_data ADD COLUMN " + columnName + " " + columnType);
+                }
+            }
+        } catch (SQLException e) {
+            // Ignorar el error si la columna ya existe, que es un caso común
+            if (!e.getMessage().contains("duplicate column name")) {
+                 plugin.getLogger().severe("Could not update SQLite table schema!");
+                 e.printStackTrace();
+            }
         }
     }
 }

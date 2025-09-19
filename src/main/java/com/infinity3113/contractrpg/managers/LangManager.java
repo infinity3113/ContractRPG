@@ -5,7 +5,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class LangManager {
@@ -21,7 +23,6 @@ public class LangManager {
 
     public void loadLanguages() {
         langConfigs.clear();
-        // CORRECCIÓN: Usar la clave "language" para que coincida con config.yml
         this.defaultLang = plugin.getConfig().getString("language", "en");
 
         File langFolder = new File(plugin.getDataFolder(), "lang");
@@ -39,7 +40,6 @@ public class LangManager {
                 langConfigs.put(langName, YamlConfiguration.loadConfiguration(file));
             }
         }
-        // Cargar el prefijo después de cargar los archivos
         this.prefix = getMessageFromFile("prefix");
     }
 
@@ -50,21 +50,31 @@ public class LangManager {
         }
     }
 
-    // Método privado para obtener el string crudo del archivo sin procesar el prefijo
     private String getMessageFromFile(String path) {
         FileConfiguration config = langConfigs.get(defaultLang);
         if (config == null || !config.contains(path)) {
-            config = langConfigs.get("en"); // Fallback a inglés
+            config = langConfigs.get("en");
             if (config == null) {
                 return "<red>Language file for '" + defaultLang + "' or 'en' not found!";
             }
         }
         return config.getString(path, "<red>Missing message: " + path);
     }
+    
+    // ¡NUEVO MÉTODO! Para leer listas de texto correctamente.
+    public List<String> getMessageList(String path) {
+        FileConfiguration config = langConfigs.get(defaultLang);
+        if (config == null || !config.isList(path)) {
+            config = langConfigs.get("en");
+             if (config == null || !config.isList(path)) {
+                return Collections.singletonList("<red>Missing message list: " + path);
+            }
+        }
+        return config.getStringList(path);
+    }
 
     public String getMessage(String path) {
         String message = getMessageFromFile(path);
-        // CORRECCIÓN: Reemplazar el placeholder %prefix% automáticamente
         return message.replace("%prefix%", this.prefix);
     }
 }

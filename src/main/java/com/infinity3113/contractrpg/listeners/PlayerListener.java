@@ -2,6 +2,7 @@ package com.infinity3113.contractrpg.listeners;
 
 import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.contracts.Contract;
+import com.infinity3113.contractrpg.contracts.ContractType;
 import com.infinity3113.contractrpg.contracts.MissionType;
 import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.util.MessageUtils;
@@ -26,14 +27,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        plugin.getStorageManager().loadPlayerData(player.getUniqueId());
+        plugin.getStorageManager().loadPlayerData(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        plugin.getStorageManager().savePlayerData(player.getUniqueId());
+        plugin.getStorageManager().savePlayerData(event.getPlayer().getUniqueId());
     }
 
     @EventHandler
@@ -54,7 +53,7 @@ public class PlayerListener implements Listener {
                         updateContractProgress(player, data, contract);
                     }
                 } catch (IllegalArgumentException e) {
-                    // Ignore
+                    // Ignorar si el objetivo no es un tipo de entidad válido
                 }
             }
         }
@@ -77,7 +76,7 @@ public class PlayerListener implements Listener {
                         updateContractProgress(player, data, contract);
                     }
                 } catch (IllegalArgumentException e) {
-                   // Ignore
+                   // Ignorar si el objetivo no es un material válido
                 }
             }
         }
@@ -85,23 +84,33 @@ public class PlayerListener implements Listener {
 
     private void updateContractProgress(Player player, PlayerData data, Contract contract) {
         int currentProgress = data.getContractProgress(contract.getId());
-        if (currentProgress < contract.getMissionRequirement()) {
-            currentProgress++;
-            data.setContractProgress(contract.getId(), currentProgress);
+        if (currentProgress >= contract.getMissionRequirement()) {
+            return; // Ya está completado, no hacer nada
+        }
 
-            String progressMessage = plugin.getLangManager().getMessage("contract-progress")
-                    .replace("%contract%", contract.getDisplayName())
-                    .replace("%progress%", String.valueOf(currentProgress))
-                    .replace("%total%", String.valueOf(contract.getMissionRequirement()));
-            MessageUtils.sendActionBar(player, progressMessage);
+        currentProgress++;
+        data.setContractProgress(contract.getId(), currentProgress);
 
-            if (currentProgress >= contract.getMissionRequirement()) {
-                MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract-completed").replace("%contract%", contract.getDisplayName()));
-                for (String rewardCommand : contract.getRewards()) {
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
-                }
-                data.removeContract(contract.getId());
+        String progressMessage = plugin.getLangManager().getMessage("actionbar_progress")
+                .replace("%mission%", contract.getDisplayName())
+                .replace("%current%", String.valueOf(currentProgress))
+                .replace("%required%", String.valueOf(contract.getMissionRequirement()));
+        MessageUtils.sendActionBar(player, progressMessage);
+
+        if (currentProgress >= contract.getMissionRequirement()) {
+            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract_completed"));
+            for (String rewardCommand : contract.getRewards()) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
             }
+
+            // Registrar como completado y luego remover
+            if (contract.getContractType() == ContractType.DAILY) {
+                data.addCompletedDailyContract(contract.getId());
+            } else if (contract.getContractType() == ContractType.WEEKLY) {
+                data.addCompletedWeeklyContract(contract.getId());
+            }
+            
+            data.removeContract(contract.getId());
         }
     }
 }

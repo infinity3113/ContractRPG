@@ -23,7 +23,6 @@ public class YamlStorage extends StorageManager {
 
     @Override
     public void loadPlayerDataAsync(UUID uuid) {
-        // CORRECCIÓN: Lectura de archivo asíncrona.
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             File playerFile = new File(dataFolder, uuid.toString() + ".yml");
             PlayerData playerData;
@@ -32,13 +31,17 @@ public class YamlStorage extends StorageManager {
                 playerData = new PlayerData(uuid);
                 playerData.setLevel(playerConfig.getInt("level", 1));
                 playerData.setExperience(playerConfig.getInt("experience", 0));
-                playerData.deserializeContracts(playerConfig.getString("contracts"));
+                
+                // Cargar datos de contratos activos y completados
+                playerData.deserializeActiveContracts(playerConfig.getString("active-contracts"));
+                playerData.deserializeCompletedDaily(playerConfig.getString("completed-daily"));
+                playerData.deserializeCompletedWeekly(playerConfig.getString("completed-weekly"));
+
             } else {
                 playerData = new PlayerData(uuid);
             }
 
             final PlayerData finalPlayerData = playerData;
-            // Volvemos al hilo principal para añadir a la caché de forma segura.
             Bukkit.getScheduler().runTask(plugin, () -> {
                 addToCache(uuid, finalPlayerData);
             });
@@ -47,7 +50,6 @@ public class YamlStorage extends StorageManager {
 
     @Override
     public void savePlayerDataAsync(PlayerData playerData) {
-        // CORRECCIÓN: Escritura de archivo asíncrona.
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             savePlayerDataSync(playerData);
         });
@@ -60,7 +62,11 @@ public class YamlStorage extends StorageManager {
 
         playerConfig.set("level", playerData.getLevel());
         playerConfig.set("experience", playerData.getExperience());
-        playerConfig.set("contracts", playerData.serializeContracts());
+        
+        // Guardar datos de contratos activos y completados
+        playerConfig.set("active-contracts", playerData.serializeActiveContracts());
+        playerConfig.set("completed-daily", playerData.serializeCompletedDaily());
+        playerConfig.set("completed-weekly", playerData.serializeCompletedWeekly());
 
         try {
             playerConfig.save(playerFile);

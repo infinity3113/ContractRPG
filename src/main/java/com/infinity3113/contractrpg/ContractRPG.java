@@ -32,7 +32,7 @@ public final class ContractRPG extends JavaPlugin {
     private ContractManager contractManager;
     private LangManager langManager;
     private StorageManager storageManager;
-    private GUIManager guiManager; // Nueva variable de instancia
+    private GUIManager guiManager;
 
     @Override
     public void onEnable() {
@@ -50,7 +50,7 @@ public final class ContractRPG extends JavaPlugin {
         this.langManager.loadLanguages();
 
         this.contractManager = new ContractManager(this);
-        this.guiManager = new GUIManager(this); // Inicializar el nuevo manager
+        this.guiManager = new GUIManager(this);
 
         String storageType = getConfig().getString("storage.type", "yaml").toLowerCase();
         if (storageType.equals("sqlite")) {
@@ -90,6 +90,7 @@ public final class ContractRPG extends JavaPlugin {
         boolean isWeeklyResetDay = (checkTime.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
 
         getLogger().info("Executing mission reset task...");
+
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
             if (playerData == null) continue;
@@ -97,29 +98,43 @@ public final class ContractRPG extends JavaPlugin {
             boolean dailyProgressLost = false;
             boolean weeklyProgressLost = false;
 
+            // --- ¡LÓGICA DE REINICIO COMPLETA! ---
+            
+            // 1. Limpiar la lista de misiones diarias completadas
+            playerData.clearCompletedDailyContracts();
+
+            // 2. Limpiar la lista de misiones semanales completadas si es el día correcto
+            if (isWeeklyResetDay) {
+                playerData.clearCompletedWeeklyContracts();
+            }
+
+            // 3. Revisar y remover las misiones ACTIVAS no completadas (si está configurado)
             Set<String> activeContracts = new HashSet<>(playerData.getActiveContracts().keySet());
             for (String contractId : activeContracts) {
                 Contract contract = getContractManager().getContract(contractId);
                 if (contract == null) continue;
+
                 if (resetDaily && contract.getContractType() == ContractType.DAILY) {
                     playerData.removeContract(contractId);
                     dailyProgressLost = true;
                 }
+
                 if (isWeeklyResetDay && resetWeekly && contract.getContractType() == ContractType.WEEKLY) {
                     playerData.removeContract(contractId);
                     weeklyProgressLost = true;
                 }
             }
 
+            // 4. Enviar mensajes de notificación al jugador
             if (dailyProgressLost) {
                 MessageUtils.sendMessage(player, getLangManager().getMessage("daily_mission_progress_lost"));
             }
             if (weeklyProgressLost) {
                 MessageUtils.sendMessage(player, getLangManager().getMessage("weekly_mission_progress_lost"));
             }
-            if (dailyProgressLost || (isWeeklyResetDay && weeklyProgressLost)) {
-                MessageUtils.sendMessage(player, getLangManager().getMessage("contracts_offered"));
-            }
+            
+            // Notificar que hay nuevos contratos disponibles para él
+            MessageUtils.sendMessage(player, getLangManager().getMessage("contracts_offered"));
         }
         getLogger().info("Mission reset task finished.");
     }
@@ -145,19 +160,9 @@ public final class ContractRPG extends JavaPlugin {
         getLogger().info("Mission reset timer has been scheduled successfully.");
     }
 
-    public static ContractRPG getInstance() {
-        return instance;
-    }
-    public ContractManager getContractManager() {
-        return contractManager;
-    }
-    public LangManager getLangManager() {
-        return langManager;
-    }
-    public StorageManager getStorageManager() {
-        return storageManager;
-    }
-    public GUIManager getGuiManager() {
-        return guiManager;
-    }
+    public static ContractRPG getInstance() { return instance; }
+    public ContractManager getContractManager() { return contractManager; }
+    public LangManager getLangManager() { return langManager; }
+    public StorageManager getStorageManager() { return storageManager; }
+    public GUIManager getGuiManager() { return guiManager; }
 }

@@ -2,6 +2,7 @@ package com.infinity3113.contractrpg.listeners;
 
 import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.contracts.Contract;
+import com.infinity3113.contractrpg.contracts.ContractType;
 import com.infinity3113.contractrpg.contracts.MissionType;
 import com.infinity3113.contractrpg.data.PlayerData;
 import io.lumine.mythic.lib.api.item.NBTItem;
@@ -27,9 +28,7 @@ public class NPCListener implements Listener {
 
         if (event.getNPC().getId() == npcId) {
             boolean delivered = tryDeliverMmoItem(player);
-
             if (!delivered) {
-                // Abrir el nuevo menú principal
                 plugin.getGuiManager().openMainMenu(player);
             }
         }
@@ -48,17 +47,14 @@ public class NPCListener implements Listener {
         
         String mmoType = nbtItem.getType();
         String mmoId = nbtItem.getString("MMOITEMS_ITEM_ID");
-
         PlayerData data = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (data == null) return false;
 
         for (String contractId : data.getActiveContracts().keySet()) {
             Contract contract = plugin.getContractManager().getContract(contractId);
-
             if (contract != null && contract.getMissionType() == MissionType.DELIVER_MMOITEM) {
                 String[] target = contract.getMissionObjective().split(":");
                 if (target.length != 2) continue;
-
                 String targetType = target[0];
                 String targetId = target[1];
 
@@ -68,20 +64,28 @@ public class NPCListener implements Listener {
 
                     if (progress >= required) {
                         player.getInventory().setItemInMainHand(null);
-                        player.sendMessage(plugin.getLangManager().getMessage("contract-completed").replace("%contract%", contract.getDisplayName()));
+                        player.sendMessage(plugin.getLangManager().getMessage("contract_completed"));
                         
                         for (String rewardCommand : contract.getRewards()) {
-                            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
+                            Bukkit.dispatchCommand(Buk.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
                         }
-                        data.removeContract(contractId);
+
+                        if (contract.getContractType() == ContractType.DAILY) {
+                            data.addCompletedDailyContract(contract.getId());
+                        } else if (contract.getContractType() == ContractType.WEEKLY) {
+                            data.addCompletedWeeklyContract(contract.getId());
+                        }
                         
+                        // --- ¡CORRECCIÓN AQUÍ! ---
+                        data.removeContract(contract.getId()); // Añadidos los paréntesis ()
+
                     } else {
                         data.setContractProgress(contractId, progress);
                         player.getInventory().setItemInMainHand(null);
-                        player.sendMessage(plugin.getLangManager().getMessage("contract-progress")
-                            .replace("%contract%", contract.getDisplayName())
-                            .replace("%progress%", String.valueOf(progress))
-                            .replace("%total%", String.valueOf(required)));
+                        player.sendMessage(plugin.getLangManager().getMessage("actionbar_progress")
+                            .replace("%mission%", contract.getDisplayName())
+                            .replace("%current%", String.valueOf(progress))
+                            .replace("%required%", String.valueOf(required)));
                     }
                     return true;
                 }
