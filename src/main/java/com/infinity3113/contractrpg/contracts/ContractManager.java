@@ -1,11 +1,9 @@
 package com.infinity3113.contractrpg.contracts;
 
 import com.infinity3113.contractrpg.ContractRPG;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.EntityType;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,7 +15,6 @@ public class ContractManager {
 
     private final ContractRPG plugin;
     private final Map<String, Contract> contracts = new HashMap<>();
-    private FileConfiguration contractsConfig;
 
     public ContractManager(ContractRPG plugin) {
         this.plugin = plugin;
@@ -30,7 +27,7 @@ public class ContractManager {
         if (!contractsFile.exists()) {
             plugin.saveResource("contracts.yml", false);
         }
-        contractsConfig = YamlConfiguration.loadConfiguration(contractsFile);
+        FileConfiguration contractsConfig = YamlConfiguration.loadConfiguration(contractsFile);
 
         ConfigurationSection contractsSection = contractsConfig.getConfigurationSection("contracts");
         if (contractsSection == null) {
@@ -39,9 +36,6 @@ public class ContractManager {
         }
 
         for (String key : contractsSection.getKeys(false)) {
-            // CORRECCIÓN: Se añade un bloque try-catch para manejar contratos mal configurados.
-            // Si un contrato tiene un error, se mostrará en la consola y el plugin
-            // continuará cargando los demás, en lugar de detenerse por completo.
             try {
                 ConfigurationSection section = contractsSection.getConfigurationSection(key);
                 String displayName = section.getString("display-name");
@@ -51,9 +45,11 @@ public class ContractManager {
                 String missionObjective = section.getString("mission-objective");
                 int missionRequirement = section.getInt("mission-requirement");
                 List<String> rewards = section.getStringList("rewards");
+                List<String> displayRewards = section.getStringList("display-rewards");
+                int experienceReward = section.getInt("experience-reward", 0);
                 int levelRequirement = section.getInt("level-requirement", 0);
 
-                Contract contract = new Contract(key, displayName, description, contractType, missionType, missionObjective, missionRequirement, rewards, levelRequirement);
+                Contract contract = new Contract(key, displayName, description, contractType, missionType, missionObjective, missionRequirement, rewards, displayRewards, experienceReward, levelRequirement);
                 contracts.put(key, contract);
             } catch (Exception e) {
                 plugin.getLogger().severe("Failed to load contract '" + key + "'. Please check its configuration in contracts.yml.");

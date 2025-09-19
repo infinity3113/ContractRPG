@@ -1,67 +1,111 @@
 # General Messages
 prefix: "<gray>[<gold>ContractRPG<gray>] "
-contracts_offered: "%prefix%<green>New daily contracts are available! Use /contracts to see them."
+contracts_offered: "%prefix%<green>New contracts are available! Use /contracts to see them."
 contract_accepted: "%prefix%<green>Contract accepted! Check your progress in /contracts."
-contract_completed: "%prefix%<gold>Contract completed! You have received %reward% as a reward."
-contract_limit_reached: "%prefix%<red>You have reached the active contract limit."
+contract_completed: "%prefix%<gold>Contract completed! You have received: <white>%reward%<gold>."
+contract_limit_reached: "%prefix%<red>You have reached the contract limit for this mission type."
 daily_mission_progress_lost: "%prefix%<yellow>Your progress on uncompleted daily missions has been reset."
 weekly_mission_progress_lost: "%prefix%<yellow>Your progress on your uncompleted weekly mission has been reset."
 actionbar_progress: "<#32CD32>Mission Progress: <white>%mission% (%current%/%required%)"
 
-# Mission Formats
-mission-formats:
-  KILL: "Kill %amount% %target%"
-  KILL_MYTHIC: "Slay %amount% %target%"
-  BREAK: "Break %amount% %target%"
-  FARM: "Obtain %amount% %target%"
-  DELIVER_MMOITEM: "Deliver %amount% %target%"
-
-# Translation keys for objectives (Example)
-translation-keys:
-  ZOMBIE: "Zombies"
-  SKELETON: "Skeletons"
-  SkeletalKnight: "Skeletal Knights"
-  AncientGolem: "Ancient Golem"
-  STONE: "Stone"
-  DIAMOND_ORE: "Diamond Ore"
-  OAK_LOG: "Oak Log"
-  WHEAT: "Wheat"
-  "MATERIAL.STEEL_INGOT": "Steel Ingot"
-  "SWORD.CUTLASS": "Cutlass"
+# --- Leveling Messages ---
+level_up: "%prefix%<bold><#32CD32>You leveled up to Level %level%!</bold>"
+exp_gain: "%prefix%<gray>You gained <#FFFF55>%exp% experience points."
+stats_message:
+  - "<strikethrough>                                                                                </strikethrough>"
+  - "<#FFD700>                              Contract Statistics"
+  - ""
+  - "    <gray>Level: <green>%level%"
+  - "    <gray>Experience: <yellow>%current_exp%<gray> / <gray>%required_exp%"
+  - ""
+  - "<strikethrough>                                                                                </strikethrough>"
 
 # --- GUI Texts ---
-gui:
-  main_menu:
-    title: "Contracts Panel"
-    active_contracts:
-      name: "<#FFD700>Active Contracts"
-      lore:
-        - "<gray>Check the progress of your"
-        - "<gray>accepted contracts."
-    daily_contracts:
-      name: "<#32CD32>Daily Contracts"
-      lore:
-        - "<gray>Accept new contracts that"
-        - "<gray>reset every 24h."
-    weekly_contracts:
-      name: "<#1E90FF>Weekly Contracts"
-      lore:
-        - "<gray>Accept a higher reward"
-        - "<gray>contract every 7 days."
-  active_contracts:
-    title: "My Active Contracts"
-  daily_contracts:
-    title: "Available Daily Contracts"
-  weekly_contracts:
-    title: "Available Weekly Contracts"
-  back_button:
-    name: "<red>Back to Menu"
-    lore:
-      - "<gray>Click to return."
-  item:
-    contract_title: "<green>Available Contract"
-    reward: "<gold>Reward: <white>%reward%"
-    click_to_accept: "<yellow>Click to accept!"
+# Main Menu
+gui.main.title: "Contracts Panel"
+gui.main.daily.name: "<#32CD32>Daily Contracts"
+gui.main.daily.lore:
+  - "<gray>Contracts that reset"
+  - "<gray>every 24 hours."
+  - " "
+  - "<yellow>Click to view!"
+gui.main.weekly.name: "<#1E90FF>Weekly Contracts"
+gui.main.weekly.lore:
+  - "<gray>Higher-reward contracts"
+  - "<gray>available every 7 days."
+  - " "
+  - "<yellow>Click to view!"
+gui.main.special.name: "<#AA00AA>Special Contracts"
+gui.main.special.lore:
+  - "<gray>Unique and challenging contracts"
+  - "<gray>with legendary rewards."
+  - " "
+  - "<yellow>Click to view!"
+gui.main.active.name: "<#FFD700>My Active Contracts"
+gui.main.active.lore:
+  - "<gray>Check the progress of your"
+  - "<gray>accepted contracts."
+  - " "
+  - "<yellow>Click to view!"
+# Stats Panel in GUI
+gui.main.stats.name: "<#A1FFFB>Your Progress"
+gui.main.stats.lore:
+  - "<gray>Level: <green>%level%"
+  - ""
+  - "%exp_bar%"
+  - "<yellow>%current_exp%<gray> / <yellow>%required_exp% EXP"
+
+# Sub-Menus (Contract Lists)
+gui.submenu.title.daily: "Daily Contracts"
+gui.submenu.title.weekly: "Weekly Contracts"
+gui.submenu.title.special: "Special Contracts"
+gui.submenu.title.active: "My Active Contracts"
+gui.submenu.lore.can-accept: "<gray>You can accept <yellow>%amount%<gray> of this type."
+gui.submenu.lore.back: "<red>Back to Main Menu"
+gui.submenu.item.click-to-accept: "<yellow>Click to accept!"
+
+# Mission Formats
+mission-formats:
+  HUNTING: "Kill %amount% %target%"
+  MINING: "Break %amount% %target%"
+  FISHING: "Fish %amount% %target%"
+  CRAFTING: "Craft %amount% %target%"
+  DELIVER: "Deliver %amount% %target%"
+  HUNT_MYTHICMOB: "Slay %amount% %target%"
+  DELIVER_MMOITEM: "Deliver %amount% %target%"
+
+# Translation keys for objectives
+translation-keys:
+  # Mobs
+  ZOMBIE: "Zombies"
+  SKELETON: "Skeletons"
+  SPIDER: "Spiders"
+  BLAZE: "Blazes"
+  ENDER_DRAGON: "Ender Dragon"
+  # MythicMobs
+  SkeletalKnight: "Skeletal Knights"
+  AncientGolem: "Ancient Golem"
+  Skeletor: "Skeletor"
+  # Blocks & Mining Items
+  OAK_LOG: "Oak Logs"
+  WHEAT: "Wheat"
+  IRON_ORE: "Iron Ore"
+  DIAMOND_ORE: "Diamond Ore"
+  COAL_ORE: "Coal Ore"
+  # Crafting Items
+  TORCH: "Torches"
+  BREAD: "Bread"
+  DIAMOND_PICKAXE: "Diamond Pickaxes"
+  NETHERITE_BLOCK: "Netherite Blocks"
+  # Fishing Items
+  COD: "Cod"
+  PUFFERFISH: "Pufferfish"
+  # Delivery Items (Vanilla)
+  IRON_BLOCK: "Iron Blocks"
+  GOLD_INGOT: "Gold Ingots"
+  # Delivery Items (MMOItems)
+  "MATERIAL.STEEL_INGOT": "Steel Ingot"
+  "SWORD.CUTLASS": "Cutlass"
 
 # --- Admin Messages ---
 no-permission: "%prefix%<red>You do not have permission to execute that command."

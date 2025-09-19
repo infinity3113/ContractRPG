@@ -44,6 +44,30 @@ public class GUIManager {
 
         fillBorders(gui, borderPane);
 
+        PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+        if (playerData != null) {
+            ItemStack statsItem = new ItemStack(Material.EXPERIENCE_BOTTLE);
+            ItemMeta statsMeta = statsItem.getItemMeta();
+            statsMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.stats.name")));
+
+            List<String> statsLore = new ArrayList<>();
+            for (String line : plugin.getLangManager().getMessageList("gui.main.stats.lore")) {
+                statsLore.add(MessageUtils.parse(line
+                        .replace("%level%", String.valueOf(playerData.getLevel()))
+                        .replace("%current_exp%", String.valueOf(playerData.getExperience()))
+                        .replace("%required_exp%", String.valueOf(playerData.getRequiredExperience()))
+                        .replace("%exp_bar%", ProgressBar.create(
+                                playerData.getExperience(), 
+                                playerData.getRequiredExperience(), 
+                                20, "⎜", "green", "gray")) // <-- CORREGIDO AQUÍ
+                ));
+            }
+            statsMeta.setLore(statsLore);
+            statsMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
+            statsItem.setItemMeta(statsMeta);
+            gui.setItem(4, statsItem);
+        }
+
         gui.setItem(20, createMenuItem(Material.WRITABLE_BOOK, "gui.main.daily", "open_daily"));
         gui.setItem(21, createMenuItem(Material.WRITABLE_BOOK, "gui.main.weekly", "open_weekly"));
         gui.setItem(22, createMenuItem(Material.WRITABLE_BOOK, "gui.main.special", "open_special"));
@@ -62,12 +86,8 @@ public class GUIManager {
 
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         
-        List<Contract> allContracts = plugin.getContractManager().getContractsByType(type);
-        
-        // --- LÓGICA CORREGIDA PARA FILTRAR MISIONES ---
-        List<Contract> availableContracts = allContracts.stream()
+        List<Contract> potentialContracts = plugin.getContractManager().getContractsByType(type).stream()
                 .filter(c -> {
-                    // El contrato no debe estar ni activo ni ya completado hoy/esta semana
                     boolean isActive = playerData.getActiveContracts().containsKey(c.getId());
                     boolean isCompleted;
                     if (type == ContractType.DAILY) {
@@ -75,22 +95,27 @@ public class GUIManager {
                     } else if (type == ContractType.WEEKLY) {
                         isCompleted = playerData.getCompletedWeeklyContracts().contains(c.getId());
                     } else {
-                        // Para misiones especiales, podrías añadir una lista de completados permanentes si quisieras
-                        isCompleted = false; 
+                        isCompleted = false;
                     }
                     return !isActive && !isCompleted;
                 })
                 .collect(Collectors.toList());
-        
-        Collections.shuffle(availableContracts);
-        
-        String configPath = type.name().toLowerCase() + "-missions.offered-amount";
-        int offerLimit = plugin.getConfig().getInt(configPath, availableContracts.size());
-        
-        List<Contract> contractsToDisplay = availableContracts.stream()
-                .limit(offerLimit)
-                .collect(Collectors.toList());
 
+        Collections.shuffle(potentialContracts);
+
+        String configPath = type.name().toLowerCase() + "-missions.offered-amount";
+        int offerLimit = plugin.getConfig().getInt(configPath, 4);
+
+        List<Contract> contractsToDisplay = new ArrayList<>();
+        for (Contract contract : potentialContracts) {
+            if (contractsToDisplay.size() >= offerLimit) {
+                break;
+            }
+            if (playerData.getLevel() >= contract.getLevelRequirement()) {
+                contractsToDisplay.add(contract);
+            }
+        }
+        
         int slot = 10;
         for (Contract contract : contractsToDisplay) {
             gui.setItem(slot, createContractItem(contract, playerData, false));
@@ -146,10 +171,21 @@ public class GUIManager {
         contract.getDescription().forEach(line -> lore.add(MessageUtils.parse(line)));
         lore.add(" ");
 
+        if (!contract.getDisplayRewards().isEmpty() || contract.getExperienceReward() > 0) {
+            lore.add(MessageUtils.parse("<gold>Recompensas:"));
+            for (String rewardLine : contract.getDisplayRewards()) {
+                lore.add(MessageUtils.parse("<gray>- <white>" + rewardLine));
+            }
+            if (contract.getExperienceReward() > 0) {
+                lore.add(MessageUtils.parse("<gray>- <#FFFF55>" + contract.getExperienceReward() + " EXP"));
+            }
+            lore.add(" ");
+        }
+
         if (isActive) {
             int progress = data.getContractProgress(contract.getId());
             int total = contract.getMissionRequirement();
-            lore.add(ProgressBar.create(progress, total, 20, "⎜", "&a", "&7"));
+            lore.add(MessageUtils.parse(ProgressBar.create(progress, total, 20, "⎜", "green", "gray"))); // <-- CORREGIDO AQUÍ
         } else {
             lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.item.click-to-accept")));
         }

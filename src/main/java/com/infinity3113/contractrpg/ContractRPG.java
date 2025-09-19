@@ -83,6 +83,34 @@ public final class ContractRPG extends JavaPlugin {
         getLogger().info("ContractRPG has been disabled!");
     }
 
+    public void completeContract(Player player, Contract contract) {
+        PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+        if (playerData == null) return;
+
+        playerData.addExperience(contract.getExperienceReward());
+
+        String rewardsString = String.join("<gray>, <white>", contract.getDisplayRewards());
+        if(contract.getExperienceReward() > 0) {
+            rewardsString += "<gray>, <white>" + contract.getExperienceReward() + " EXP";
+        }
+        
+        String completionMessage = getLangManager().getMessage("contract_completed")
+                .replace("%reward%", rewardsString);
+        MessageUtils.sendMessage(player, completionMessage);
+
+        for (String rewardCommand : contract.getRewards()) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
+        }
+
+        if (contract.getContractType() == ContractType.DAILY) {
+            playerData.addCompletedDailyContract(contract.getId());
+        } else if (contract.getContractType() == ContractType.WEEKLY) {
+            playerData.addCompletedWeeklyContract(contract.getId());
+        }
+        
+        playerData.removeContract(contract.getId());
+    }
+
     public void performMissionReset() {
         boolean resetDaily = getConfig().getBoolean("daily-missions.reset-unfinished-on-new-offer", false);
         boolean resetWeekly = getConfig().getBoolean("weekly-missions.reset-unfinished-on-new-offer", false);
@@ -98,17 +126,12 @@ public final class ContractRPG extends JavaPlugin {
             boolean dailyProgressLost = false;
             boolean weeklyProgressLost = false;
 
-            // --- ¡LÓGICA DE REINICIO COMPLETA! ---
-            
-            // 1. Limpiar la lista de misiones diarias completadas
             playerData.clearCompletedDailyContracts();
 
-            // 2. Limpiar la lista de misiones semanales completadas si es el día correcto
             if (isWeeklyResetDay) {
                 playerData.clearCompletedWeeklyContracts();
             }
 
-            // 3. Revisar y remover las misiones ACTIVAS no completadas (si está configurado)
             Set<String> activeContracts = new HashSet<>(playerData.getActiveContracts().keySet());
             for (String contractId : activeContracts) {
                 Contract contract = getContractManager().getContract(contractId);
@@ -125,7 +148,6 @@ public final class ContractRPG extends JavaPlugin {
                 }
             }
 
-            // 4. Enviar mensajes de notificación al jugador
             if (dailyProgressLost) {
                 MessageUtils.sendMessage(player, getLangManager().getMessage("daily_mission_progress_lost"));
             }
@@ -133,7 +155,6 @@ public final class ContractRPG extends JavaPlugin {
                 MessageUtils.sendMessage(player, getLangManager().getMessage("weekly_mission_progress_lost"));
             }
             
-            // Notificar que hay nuevos contratos disponibles para él
             MessageUtils.sendMessage(player, getLangManager().getMessage("contracts_offered"));
         }
         getLogger().info("Mission reset task finished.");

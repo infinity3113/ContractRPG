@@ -2,11 +2,23 @@
 prefix: "<#FFD700>[ContractRPG] <white>"
 contracts_offered: "%prefix%¡Nuevos contratos están disponibles! Usa /contracts para verlos."
 contract_accepted: "%prefix%<green>¡Contrato aceptado! Revisa tu progreso en /contracts."
-contract_completed: "%prefix%<gold>¡Contrato completado! Has recibido %reward% de recompensa."
+contract_completed: "%prefix%<gold>¡Contrato completado! Has recibido: <white>%reward%<gold>."
 contract_limit_reached: "%prefix%<red>Has alcanzado el límite de contratos para este tipo de misión."
 daily_mission_progress_lost: "%prefix%<yellow>El progreso de tus misiones diarias no completadas ha sido reiniciado."
 weekly_mission_progress_lost: "%prefix%<yellow>El progreso de tu misión semanal no completada ha sido reiniciado."
 actionbar_progress: "<#32CD32>Progreso de Misión: <white>%mission% (%current%/%required%)"
+
+# --- Mensajes de Niveles ---
+level_up: "%prefix%<bold><#32CD32>¡Has subido al Nivel %level%!</bold>"
+exp_gain: "%prefix%<gray>Has ganado <#FFFF55>%exp% puntos de experiencia."
+stats_message:
+  - "<strikethrough>                                                                                </strikethrough>"
+  - "<#FFD700>                              Estadísticas de Contratos"
+  - ""
+  - "    <gray>Nivel: <green>%level%"
+  - "    <gray>Experiencia: <yellow>%current_exp%<gray> / <gray>%required_exp%"
+  - ""
+  - "<strikethrough>                                                                                </strikethrough>"
 
 # --- Textos para la GUI ---
 # Menú Principal
@@ -35,6 +47,13 @@ gui.main.active.lore:
   - "<gray>contratos aceptados."
   - " "
   - "<yellow>¡Haz clic para ver!"
+# Panel de Estadísticas en la GUI
+gui.main.stats.name: "<#A1FFFB>Tu Progreso"
+gui.main.stats.lore:
+  - "<gray>Nivel: <green>%level%"
+  - ""
+  - "%exp_bar%"
+  - "<yellow>%current_exp%<gray> / <yellow>%required_exp% EXP"
 
 # Sub-Menús (Listas de Contratos)
 gui.submenu.title.daily: "Contratos Diarios"
@@ -47,22 +66,44 @@ gui.submenu.item.click-to-accept: "<yellow>¡Haz clic para aceptar!"
 
 # Formatos de Misión
 mission-formats:
-  KILL: "Matar %amount% de %target%"
-  KILL_MYTHIC: "Matar %amount% de %target%"
-  BREAK: "Romper %amount% de %target%"
-  FARM: "Obtener %amount% de %target%"
+  HUNTING: "Matar %amount% de %target%"
+  MINING: "Romper %amount% de %target%"
+  FISHING: "Pescar %amount% de %target%"
+  CRAFTING: "Craftear %amount% de %target%"
+  DELIVER: "Entregar %amount% de %target%"
+  HUNT_MYTHICMOB: "Matar %amount% de %target%"
   DELIVER_MMOITEM: "Entregar %amount% de %target%"
 
-# Claves de traducción para objetivos (Ejemplo)
+# Claves de traducción para objetivos
 translation-keys:
+  # Mobs
   ZOMBIE: "Zombis"
   SKELETON: "Esqueletos"
+  SPIDER: "Arañas"
+  BLAZE: "Blazes"
+  ENDER_DRAGON: "Dragón del End"
+  # MythicMobs
   SkeletalKnight: "Caballeros Esqueléticos"
   AncientGolem: "Golem Antiguo"
-  STONE: "Piedra"
-  DIAMOND_ORE: "Mena de Diamante"
-  OAK_LOG: "Tronco de Roble"
+  Skeletor: "Skeletor"
+  # Bloques y Items de Minería
+  OAK_LOG: "Troncos de Roble"
   WHEAT: "Trigo"
+  IRON_ORE: "Mena de Hierro"
+  DIAMOND_ORE: "Mena de Diamante"
+  COAL_ORE: "Mena de Carbón"
+  # Items de Crafteo
+  TORCH: "Antorchas"
+  BREAD: "Pan"
+  DIAMOND_PICKAXE: "Picos de Diamante"
+  NETHERITE_BLOCK: "Bloques de Netherita"
+  # Items de Pesca
+  COD: "Bacalao"
+  PUFFERFISH: "Pez Globo"
+  # Items de Entrega (Vanilla)
+  IRON_BLOCK: "Bloques de Hierro"
+  GOLD_INGOT: "Lingotes de Oro"
+  # Items de Entrega (MMOItems)
   "MATERIAL.STEEL_INGOT": "Lingote de Acero"
   "SWORD.CUTLASS": "Sable"
 

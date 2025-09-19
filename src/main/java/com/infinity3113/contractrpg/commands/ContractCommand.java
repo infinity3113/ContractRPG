@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ContractCommand implements CommandExecutor {
@@ -67,9 +68,23 @@ public class ContractCommand implements CommandExecutor {
                 MessageUtils.sendMessage(player, langManager.getMessage("missions-manually-reset"));
                 return true;
             }
+            
+            if (args[0].equalsIgnoreCase("stats")) {
+                PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+                if (playerData == null) return true;
+
+                List<String> statsMessage = langManager.getMessageList("stats_message");
+                for (String line : statsMessage) {
+                    player.sendMessage(MessageUtils.parse(line
+                            .replace("%level%", String.valueOf(playerData.getLevel()))
+                            .replace("%current_exp%", String.valueOf(playerData.getExperience()))
+                            .replace("%required_exp%", String.valueOf(playerData.getRequiredExperience()))
+                    ));
+                }
+                return true;
+            }
         }
 
-        // Abrir el nuevo menú principal
         plugin.getGuiManager().openMainMenu(player);
         return true;
     }

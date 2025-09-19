@@ -2,12 +2,10 @@ package com.infinity3113.contractrpg.listeners;
 
 import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.contracts.Contract;
-import com.infinity3113.contractrpg.contracts.ContractType;
 import com.infinity3113.contractrpg.contracts.MissionType;
 import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.util.MessageUtils;
 import io.lumine.mythic.bukkit.events.MythicMobDeathEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -56,18 +54,7 @@ public class MythicMobListener implements Listener {
         MessageUtils.sendActionBar(player, progressMessage);
 
         if (currentProgress >= contract.getMissionRequirement()) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract_completed"));
-            for (String rewardCommand : contract.getRewards()) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
-            }
-
-            if (contract.getContractType() == ContractType.DAILY) {
-                data.addCompletedDailyContract(contract.getId());
-            } else if (contract.getContractType() == ContractType.WEEKLY) {
-                data.addCompletedWeeklyContract(contract.getId());
-            }
-
-            data.removeContract(contract.getId());
+            plugin.completeContract(player, contract);
         }
     }
 }

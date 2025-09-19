@@ -2,18 +2,19 @@ package com.infinity3113.contractrpg.listeners;
 
 import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.contracts.Contract;
-import com.infinity3113.contractrpg.contracts.ContractType;
 import com.infinity3113.contractrpg.contracts.MissionType;
 import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.util.MessageUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -53,7 +54,7 @@ public class PlayerListener implements Listener {
                         updateContractProgress(player, data, contract);
                     }
                 } catch (IllegalArgumentException e) {
-                    // Ignorar si el objetivo no es un tipo de entidad válido
+                    // Ignorar
                 }
             }
         }
@@ -76,16 +77,71 @@ public class PlayerListener implements Listener {
                         updateContractProgress(player, data, contract);
                     }
                 } catch (IllegalArgumentException e) {
-                   // Ignorar si el objetivo no es un material válido
+                   // Ignorar
                 }
             }
         }
     }
 
+    // --- ¡NUEVO EVENTO PARA PESCA! ---
+    @EventHandler
+    public void onPlayerFish(PlayerFishEvent event) {
+        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) return;
+        if (!(event.getCaught() instanceof Item)) return;
+
+        Player player = event.getPlayer();
+        PlayerData data = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+        if (data == null) return;
+
+        Material caughtType = ((Item) event.getCaught()).getItemStack().getType();
+
+        for (String contractId : data.getActiveContracts().keySet()) {
+            Contract contract = plugin.getContractManager().getContract(contractId);
+            if (contract != null && contract.getMissionType() == MissionType.FISHING) {
+                try {
+                    Material requiredType = Material.valueOf(contract.getMissionObjective().toUpperCase());
+                    if (caughtType == requiredType) {
+                        updateContractProgress(player, data, contract);
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Ignorar
+                }
+            }
+        }
+    }
+
+    // --- ¡NUEVO EVENTO PARA CRAFTEO! ---
+    @EventHandler
+    public void onCraftItem(CraftItemEvent event) {
+        if (!(event.getWhoClicked() instanceof Player)) return;
+
+        Player player = (Player) event.getWhoClicked();
+        PlayerData data = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+        if (data == null) return;
+
+        Material craftedType = event.getRecipe().getResult().getType();
+
+        for (String contractId : data.getActiveContracts().keySet()) {
+            Contract contract = plugin.getContractManager().getContract(contractId);
+            if (contract != null && contract.getMissionType() == MissionType.CRAFTING) {
+                try {
+                    Material requiredType = Material.valueOf(contract.getMissionObjective().toUpperCase());
+                    if (craftedType == requiredType) {
+                        // El evento se llama por cada item crafteado, así que solo sumamos 1
+                        updateContractProgress(player, data, contract);
+                    }
+                } catch (IllegalArgumentException e) {
+                    // Ignorar
+                }
+            }
+        }
+    }
+
+
     private void updateContractProgress(Player player, PlayerData data, Contract contract) {
         int currentProgress = data.getContractProgress(contract.getId());
         if (currentProgress >= contract.getMissionRequirement()) {
-            return; // Ya está completado, no hacer nada
+            return;
         }
 
         currentProgress++;
@@ -98,19 +154,7 @@ public class PlayerListener implements Listener {
         MessageUtils.sendActionBar(player, progressMessage);
 
         if (currentProgress >= contract.getMissionRequirement()) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract_completed"));
-            for (String rewardCommand : contract.getRewards()) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
-            }
-
-            // Registrar como completado y luego remover
-            if (contract.getContractType() == ContractType.DAILY) {
-                data.addCompletedDailyContract(contract.getId());
-            } else if (contract.getContractType() == ContractType.WEEKLY) {
-                data.addCompletedWeeklyContract(contract.getId());
-            }
-            
-            data.removeContract(contract.getId());
+            plugin.completeContract(player, contract);
         }
     }
 }

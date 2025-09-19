@@ -1,6 +1,12 @@
 # Idioma del plugin. Debe coincidir con un archivo en la carpeta /lang (ej: "es", "en")
 language: "es"
 
+# ¡NUEVO! Sistema de Niveles
+leveling:
+  # Fórmula para la experiencia necesaria. Puedes cambiar el 250.
+  # Con 250, Nivel 1->2 necesita 250 EXP, Nivel 2->3 necesita 500 EXP, etc.
+  experience-base: 250
+
 daily-missions:
   # ¿Cuántas misiones diarias se le ofrecerán al jugador para que elija?
   offered-amount: 4
