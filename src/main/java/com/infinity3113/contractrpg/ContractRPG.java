@@ -12,9 +12,7 @@ import com.infinity3113.contractrpg.listeners.GUIListener;
 import com.infinity3113.contractrpg.listeners.MythicMobListener;
 import com.infinity3113.contractrpg.listeners.NPCListener;
 import com.infinity3113.contractrpg.listeners.PlayerListener;
-import com.infinity3113.contractrpg.managers.ConfigUpdater;
-import com.infinity3113.contractrpg.managers.GUIManager;
-import com.infinity3113.contractrpg.managers.LangManager;
+import com.infinity3113.contractrpg.managers.*;
 import com.infinity3113.contractrpg.util.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -69,6 +67,11 @@ public final class ContractRPG extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new MythicMobListener(this), this);
             getLogger().info("Successfully hooked into MythicMobs.");
         }
+        
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            new PlaceholderManager(this).register();
+            getLogger().info("Successfully hooked into PlaceholderAPI.");
+        }
 
         getCommand("contract").setExecutor(new ContractCommand(this));
         startMissionResetTimer();
@@ -97,6 +100,10 @@ public final class ContractRPG extends JavaPlugin {
         String completionMessage = getLangManager().getMessage("contract_completed")
                 .replace("%reward%", rewardsString);
         MessageUtils.sendMessage(player, completionMessage);
+
+        String title = getLangManager().getMessage("contract_completed_title");
+        String subtitle = getLangManager().getMessage("contract_completed_subtitle").replace("%mission%", contract.getDisplayName());
+        player.sendTitle(title, subtitle, 10, 70, 20);
 
         for (String rewardCommand : contract.getRewards()) {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), rewardCommand.replace("%player%", player.getName()));
