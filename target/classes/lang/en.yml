@@ -1,24 +1,26 @@
 # General Messages
-prefix: "<gray>[<gold>ContractRPG<gray>] "
-contracts_offered: "%prefix%<green>New contracts are available! Use /contracts to see them."
+prefix: "<#FFD700>[ContractRPG] <white>"
+contracts_offered: "%prefix%New contracts are available! Use /contracts to see them."
 contract_accepted: "%prefix%<green>Contract accepted! Check your progress in /contracts."
 contract_completed: "%prefix%<gold>Contract completed! You have received: <white>%reward%<gold>."
+contract_completed_title: "<gold>Mission Completed!"
+contract_completed_subtitle: "<white>%mission%"
 contract_limit_reached: "%prefix%<red>You have reached the contract limit for this mission type."
-daily_mission_progress_lost: "%prefix%<yellow>Your progress on uncompleted daily missions has been reset."
-weekly_mission_progress_lost: "%prefix%<yellow>Your progress on your uncompleted weekly mission has been reset."
+daily_mission_progress_lost: "%prefix%<yellow>The progress of your uncompleted daily missions has been reset."
+weekly_mission_progress_lost: "%prefix%<yellow>The progress of your uncompleted weekly mission has been reset."
 actionbar_progress: "<#32CD32>Mission Progress: <white>%mission% (%current%/%required%)"
 
-# --- Leveling Messages ---
-level_up: "%prefix%<bold><#32CD32>You leveled up to Level %level%!</bold>"
-exp_gain: "%prefix%<gray>You gained <#FFFF55>%exp% experience points."
+# --- Level Messages ---
+level_up: "%prefix%<bold><#32CD32>You have leveled up to Level %level%!</bold>"
+exp_gain: "%prefix%<gray>You have gained <#FFFF55>%exp% experience points."
 stats_message:
-  - "<strikethrough>                                                                                </strikethrough>"
-  - "<#FFD700>                              Contract Statistics"
+  - "<strikethrough>                                                                        </strikethrough>"
+  - "<#FFD700>                              Contract Stats"
   - ""
   - "    <gray>Level: <green>%level%"
   - "    <gray>Experience: <yellow>%current_exp%<gray> / <gray>%required_exp%"
   - ""
-  - "<strikethrough>                                                                                </strikethrough>"
+  - "<strikethrough>                                                                        </strikethrough>"
 
 # --- GUI Texts ---
 # Main Menu
@@ -31,7 +33,7 @@ gui.main.daily.lore:
   - "<yellow>Click to view!"
 gui.main.weekly.name: "<#1E90FF>Weekly Contracts"
 gui.main.weekly.lore:
-  - "<gray>Higher-reward contracts"
+  - "<gray>Higher reward contracts"
   - "<gray>available every 7 days."
   - " "
   - "<yellow>Click to view!"
@@ -66,13 +68,13 @@ gui.submenu.item.click-to-accept: "<yellow>Click to accept!"
 
 # Mission Formats
 mission-formats:
-  HUNTING: "Kill %amount% %target%"
-  MINING: "Break %amount% %target%"
-  FISHING: "Fish %amount% %target%"
-  CRAFTING: "Craft %amount% %target%"
-  DELIVER: "Deliver %amount% %target%"
-  HUNT_MYTHICMOB: "Slay %amount% %target%"
-  DELIVER_MMOITEM: "Deliver %amount% %target%"
+  HUNTING: "Kill %amount% of %target%"
+  MINING: "Break %amount% of %target%"
+  FISHING: "Fish %amount% of %target%"
+  CRAFTING: "Craft %amount% of %target%"
+  DELIVER: "Deliver %amount% of %target%"
+  HUNT_MYTHICMOB: "Kill %amount% of %target%"
+  DELIVER_MMOITEM: "Deliver %amount% of %target%"
 
 # Translation keys for objectives
 translation-keys:
@@ -86,7 +88,7 @@ translation-keys:
   SkeletalKnight: "Skeletal Knights"
   AncientGolem: "Ancient Golem"
   Skeletor: "Skeletor"
-  # Blocks & Mining Items
+  # Mining Blocks & Items
   OAK_LOG: "Oak Logs"
   WHEAT: "Wheat"
   IRON_ORE: "Iron Ore"
@@ -112,3 +114,7 @@ no-permission: "%prefix%<red>You do not have permission to execute that command.
 plugin-reloaded: "%prefix%<green>The plugin has been reloaded."
 contract-removed-on-reload: "%prefix%<yellow>The contract '%contract%' was removed as it no longer exists."
 missions-manually-reset: "%prefix%<green>You have forced a mission reset for all online players."
+
+# ===== ADDED LINES FOR /contract placeholder COMMAND =====
+placeholder-list-header: "<aqua>Available Placeholders:"
+placeholder-list-format: "<gray>- <white>%placeholder%"

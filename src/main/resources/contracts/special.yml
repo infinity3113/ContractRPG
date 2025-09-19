@@ -1,0 +1,224 @@
+# ======================================================================
+# ===             ARCHIVO DE MISIONES ESPECIALES                     ===
+# ======================================================================
+contracts:
+  special_hunt_ender_dragon:
+    display-name: "<#DA70D6>Especial: El Fin del Comienzo"
+    description: [ "<gray>Derrota al Dragón del End." ]
+    contract-type: SPECIAL
+    mission-type: HUNTING
+    mission-objective: "ENDER_DRAGON"
+    mission-requirement: 1
+    rewards: [ "eco give %player% 15000", "minecraft:give %player% dragon_egg 1" ]
+    display-rewards: [ "15000 de Dinero", "1x Huevo de Dragón" ]
+    experience-reward: 5000
+    level-requirement: 20
+  special_craft_full_netherite:
+    display-name: "<#4B0082>Especial: Armadura de los Dioses"
+    description: [ "<gray>Craftea un set completo de armadura de Netherita." ]
+    contract-type: SPECIAL
+    mission-type: CRAFTING
+    mission-objective: "NETHERITE_HELMET"
+    mission-requirement: 4
+    rewards: [ "eco give %player% 25000" ]
+    display-rewards: [ "25000 de Dinero" ]
+    experience-reward: 8000
+    level-requirement: 25
+  special_mythic_titan_slayer:
+    display-name: "<#FF4500>Especial: Matador de Titanes"
+    description: [ "<gray>Derrota al Titán de Fuego (MythicMob)." ]
+    contract-type: SPECIAL
+    mission-type: HUNT_MYTHICMOB
+    mission-objective: "TitanDeFuego"
+    mission-requirement: 1
+    rewards: [ "eco give %player% 50000", "mi give SWORD TITAN_BLADE %player% 1" ]
+    display-rewards: [ "50000 de Dinero", "1x Hoja del Titán (MMOItem)" ]
+    experience-reward: 15000
+    level-requirement: 30
+  special_the_collector_wood:
+    display-name: "<#8B4513>Especial: El Coleccionista de Maderas"
+    description: [ "<gray>Entrega 64 troncos de cada tipo de madera (8 tipos)." ]
+    contract-type: SPECIAL
+    mission-type: DELIVER
+    mission-objective: "OAK_LOG"
+    mission-requirement: 512
+    rewards: [ "eco give %player% 12000" ]
+    display-rewards: [ "12000 de Dinero" ]
+    experience-reward: 4000
+    level-requirement: 15
+  special_ocean_master:
+    display-name: "<#0000CD>Especial: Maestro del Océano"
+    description: [ "<gray>Pesca 1 de cada tipo de pez (4 tipos)." ]
+    contract-type: SPECIAL
+    mission-type: FISHING
+    mission-objective: "TROPICAL_FISH"
+    mission-requirement: 4
+    rewards: [ "eco give %player% 10000" ]
+    display-rewards: [ "10000 de Dinero" ]
+    experience-reward: 3500
+    level-requirement: 22
+  special_build_a_pyramid:
+    display-name: "<#F0E68C>Especial: El Arquitecto"
+    description: [ "<gray>Craftea y entrega 100 bloques de oro." ]
+    contract-type: SPECIAL
+    mission-type: DELIVER
+    mission-objective: "GOLD_BLOCK"
+    mission-requirement: 100
+    rewards: [ "eco give %player% 20000" ]
+    display-rewards: [ "20000 de Dinero" ]
+    experience-reward: 6000
+    level-requirement: 28
+  special_the_warden:
+    display-name: "<#004242>Especial: El Guardián de la Oscuridad"
+    description: ["<gray>Derrota a un Warden."]
+    contract-type: SPECIAL
+    mission-type: HUNTING
+    mission-objective: "WARDEN"
+    mission-requirement: 1
+    rewards: ["eco give %player% 30000"]
+    display-rewards: ["30000 de Dinero"]
+    experience-reward: 10000
+    level-requirement: 35
+  special_mythic_ice_queen:
+    display-name: "<#ADD8E6>Especial: La Reina de Hielo"
+    description: ["<gray>Derrota a la Reina de Hielo (MythicMob)."]
+    contract-type: SPECIAL
+    mission-type: HUNT_MYTHICMOB
+    mission-objective: "ReinaDeHielo"
+    mission-requirement: 1
+    rewards: ["eco give %player% 60000", "mi give ARMOR ICE_QUEEN_CROWN %player% 1"]
+    display-rewards: ["60000 de Dinero", "1x Corona de la Reina de Hielo"]
+    experience-reward: 20000
+    level-requirement: 40
+  special_full_beacon:
+    display-name: "<#FFFF00>Especial: Poder Total"
+    description: ["<gray>Construye y entrega una pirámide de faro completa", "<gray>de bloques de Netherita."]
+    contract-type: SPECIAL
+    mission-type: DELIVER
+    mission-objective: "NETHERITE_BLOCK"
+    mission-requirement: 164 
+    rewards: ["eco give %player% 100000"]
+    display-rewards: ["100000 de Dinero"]
+    experience-reward: 50000
+    level-requirement: 50
+  special_mmo_world_ender:
+    display-name: "<#800080>Especial: El Fin del Mundo"
+    description: ["<gray>Entrega la legendaria gema 'Fin del Mundo' (MMOItem)."]
+    contract-type: SPECIAL
+    mission-type: DELIVER_MMOITEM
+    mission-objective: "GEM_STONE:WORLD_ENDER"
+    mission-requirement: 1
+    rewards: ["eco give %player% 200000"]
+    display-rewards: ["200000 de Dinero"]
+    experience-reward: 100000
+    level-requirement: 60
+  special_mob_slayer_pro:
+    display-name: "<#B22222>Especial: Asesino de Monstruos Profesional"
+    description: ["<gray>Derrota a 1000 monstruos hostiles."]
+    contract-type: SPECIAL
+    mission-type: HUNTING
+    mission-objective: "ZOMBIE"
+    mission-requirement: 1000
+    rewards: ["eco give %player% 18000"]
+    display-rewards: ["18000 de Dinero"]
+    experience-reward: 5500
+    level-requirement: 20
+  special_nether_expert:
+    display-name: "<#800000>Especial: Experto del Nether"
+    description: ["<gray>Obtén todos los logros del Nether."]
+    contract-type: SPECIAL
+    mission-type: CRAFTING 
+    mission-objective: "NETHER_STAR"
+    mission-requirement: 1
+    rewards: ["eco give %player% 22000"]
+    display-rewards: ["22000 de Dinero"]
+    experience-reward: 7000
+    level-requirement: 30
+  special_master_enchanter:
+    display-name: "<#9400D3>Especial: Maestro del Encantamiento"
+    description: ["<gray>Crea un objeto con 5 encantamientos de nivel máximo."]
+    contract-type: SPECIAL
+    mission-type: CRAFTING
+    mission-objective: "ENCHANTED_BOOK"
+    mission-requirement: 1
+    rewards: ["eco give %player% 28000"]
+    display-rewards: ["28000 de Dinero"]
+    experience-reward: 9000
+    level-requirement: 38
+  special_mythic_undead_king:
+    display-name: "<#006400>Especial: Rey No-Muerto"
+    description: ["<gray>Derrota al Rey Liche (MythicMob)."]
+    contract-type: SPECIAL
+    mission-type: HUNT_MYTHICMOB
+    mission-objective: "ReyLiche"
+    mission-requirement: 1
+    rewards: ["eco give %player% 75000", "mi give SWORD LICH_BANE %player% 1"]
+    display-rewards: ["75000 de Dinero", "1x Perdición del Liche (MMOItem)"]
+    experience-reward: 25000
+    level-requirement: 45
+  special_animal_breeder_master:
+    display-name: "<#FFC0CB>Especial: Maestro Criador"
+    description: ["<gray>Cría 100 de cada animal pasivo."]
+    contract-type: SPECIAL
+    mission-type: CRAFTING
+    mission-objective: "WHEAT"
+    mission-requirement: 500
+    rewards: ["eco give %player% 15000"]
+    display-rewards: ["15000 de Dinero"]
+    experience-reward: 4500
+    level-requirement: 18
+  special_ultimate_miner:
+    display-name: "<#708090>Especial: Minero Definitivo"
+    description: ["<gray>Extrae 1000 menas de diamante."]
+    contract-type: SPECIAL
+    mission-type: MINING
+    mission-objective: "DIAMOND_ORE"
+    mission-requirement: 1000
+    rewards: ["eco give %player% 40000"]
+    display-rewards: ["40000 de Dinero"]
+    experience-reward: 12000
+    level-requirement: 32
+  special_potion_master:
+    display-name: "<#DDA0DD>Especial: Maestro de Pociones"
+    description: ["<gray>Craftea 20 de cada poción útil (Fuerza, Velocidad, etc.)."]
+    contract-type: SPECIAL
+    mission-type: CRAFTING
+    mission-objective: "POTION"
+    mission-requirement: 100
+    rewards: ["eco give %player% 35000"]
+    display-rewards: ["35000 de Dinero"]
+    experience-reward: 11000
+    level-requirement: 42
+  special_mmo_celestial_artifact:
+    display-name: "<#F0E68C>Especial: Artefacto Celestial"
+    description: ["<gray>Entrega el Corazón de una Estrella (MMOItem)."]
+    contract-type: SPECIAL
+    mission-type: DELIVER_MMOITEM
+    mission-objective: "ARTIFACT:STAR_HEART"
+    mission-requirement: 1
+    rewards: ["eco give %player% 150000"]
+    display-rewards: ["150000 de Dinero"]
+    experience-reward: 75000
+    level-requirement: 55
+  special_all_achievements:
+    display-name: "<#FFD700>Especial: El Completista"
+    description: ["<gray>Completa todos los logros de Minecraft."]
+    contract-type: SPECIAL
+    mission-type: CRAFTING 
+    mission-objective: "DIAMOND"
+    mission-requirement: 1
+    rewards: ["lp user %player% parent set truelegend"]
+    display-rewards: ["Rango [Leyenda Verdadera]"]
+    experience-reward: 250000
+    level-requirement: 70
+  special_mythic_chaos_lord:
+    display-name: "<#FF00FF>Especial: Señor del Caos"
+    description: ["<gray>Derrota a Xy'lar, el Señor del Caos (MythicMob)."]
+    contract-type: SPECIAL
+    mission-type: HUNT_MYTHICMOB
+    mission-objective: "XylarElDelCaos"
+    mission-requirement: 1
+    rewards: ["eco give %player% 500000", "mi give ARTIFACT CHAOS_ORB %player% 1"]
+    display-rewards: ["500000 de Dinero", "1x Orbe del Caos (Artefacto)"]
+    experience-reward: 200000
+    level-requirement: 80

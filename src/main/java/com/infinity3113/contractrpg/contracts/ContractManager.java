@@ -23,37 +23,66 @@ public class ContractManager {
 
     public void loadContracts() {
         contracts.clear();
-        File contractsFile = new File(plugin.getDataFolder(), "contracts.yml");
-        if (!contractsFile.exists()) {
-            plugin.saveResource("contracts.yml", false);
-        }
-        FileConfiguration contractsConfig = YamlConfiguration.loadConfiguration(contractsFile);
+        
+        // Define la carpeta donde se almacenarán los archivos de contratos.
+        File contractsFolder = new File(plugin.getDataFolder(), "contracts");
 
-        ConfigurationSection contractsSection = contractsConfig.getConfigurationSection("contracts");
-        if (contractsSection == null) {
-            plugin.getLogger().warning("No 'contracts' section found in contracts.yml!");
+        // Si la carpeta no existe, la crea.
+        if (!contractsFolder.exists()) {
+            contractsFolder.mkdirs();
+        }
+        
+        // Guarda los archivos de ejemplo desde el JAR si no existen en la carpeta de destino.
+        saveDefaultContractFiles(contractsFolder);
+
+        // Si la carpeta está vacía o no contiene archivos .yml, no hay nada que cargar.
+        File[] contractFiles = contractsFolder.listFiles((dir, name) -> name.endsWith(".yml"));
+        if (contractFiles == null || contractFiles.length == 0) {
+            plugin.getLogger().info("No contract files found in 'contracts' folder. No contracts were loaded.");
             return;
         }
+        
+        // Itera sobre cada archivo .yml encontrado en la carpeta.
+        for (File contractFile : contractFiles) {
+            FileConfiguration contractConfig = YamlConfiguration.loadConfiguration(contractFile);
+            ConfigurationSection contractsSection = contractConfig.getConfigurationSection("contracts");
 
-        for (String key : contractsSection.getKeys(false)) {
-            try {
-                ConfigurationSection section = contractsSection.getConfigurationSection(key);
-                String displayName = section.getString("display-name");
-                List<String> description = section.getStringList("description");
-                ContractType contractType = ContractType.valueOf(section.getString("contract-type").toUpperCase());
-                MissionType missionType = MissionType.valueOf(section.getString("mission-type").toUpperCase());
-                String missionObjective = section.getString("mission-objective");
-                int missionRequirement = section.getInt("mission-requirement");
-                List<String> rewards = section.getStringList("rewards");
-                List<String> displayRewards = section.getStringList("display-rewards");
-                int experienceReward = section.getInt("experience-reward", 0);
-                int levelRequirement = section.getInt("level-requirement", 0);
+            if (contractsSection == null) {
+                plugin.getLogger().warning("No 'contracts' section found in " + contractFile.getName() + "!");
+                continue;
+            }
 
-                Contract contract = new Contract(key, displayName, description, contractType, missionType, missionObjective, missionRequirement, rewards, displayRewards, experienceReward, levelRequirement);
-                contracts.put(key, contract);
-            } catch (Exception e) {
-                plugin.getLogger().severe("Failed to load contract '" + key + "'. Please check its configuration in contracts.yml.");
-                plugin.getLogger().severe("Error details: " + e.getMessage());
+            for (String key : contractsSection.getKeys(false)) {
+                try {
+                    ConfigurationSection section = contractsSection.getConfigurationSection(key);
+                    String displayName = section.getString("display-name");
+                    List<String> description = section.getStringList("description");
+                    ContractType contractType = ContractType.valueOf(section.getString("contract-type").toUpperCase());
+                    MissionType missionType = MissionType.valueOf(section.getString("mission-type").toUpperCase());
+                    String missionObjective = section.getString("mission-objective");
+                    int missionRequirement = section.getInt("mission-requirement");
+                    List<String> rewards = section.getStringList("rewards");
+                    List<String> displayRewards = section.getStringList("display-rewards");
+                    int experienceReward = section.getInt("experience-reward", 0);
+                    int levelRequirement = section.getInt("level-requirement", 0);
+
+                    Contract contract = new Contract(key, displayName, description, contractType, missionType, missionObjective, missionRequirement, rewards, displayRewards, experienceReward, levelRequirement);
+                    contracts.put(key, contract);
+                } catch (Exception e) {
+                    plugin.getLogger().severe("Failed to load contract '" + key + "' from " + contractFile.getName() + ". Please check its configuration.");
+                    plugin.getLogger().severe("Error details: " + e.getMessage());
+                }
+            }
+        }
+    }
+
+    private void saveDefaultContractFiles(File contractsFolder) {
+        String[] defaultFiles = {"daily.yml", "weekly.yml", "special.yml"};
+        for (String fileName : defaultFiles) {
+            File destinationFile = new File(contractsFolder, fileName);
+            // El archivo se guarda desde la carpeta 'contracts' dentro del JAR.
+            if (!destinationFile.exists()) {
+                plugin.saveResource("contracts/" + fileName, false);
             }
         }
     }
@@ -71,8 +100,7 @@ public class ContractManager {
         }
         return result;
     }
-    
-    // MÉTODO AÑADIDO PARA SOLUCIONAR EL ERROR
+
     public String getFormattedMission(Contract contract) {
         String missionObjective = contract.getMissionObjective();
         String translatedObjective = plugin.getLangManager().getMessage(missionObjective);
