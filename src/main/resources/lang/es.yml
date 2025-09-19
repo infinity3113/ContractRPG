@@ -3,18 +3,47 @@ prefix: "<#FFD700>[ContractRPG] <white>"
 contracts_offered: "%prefix%¡Nuevos contratos están disponibles! Usa /contracts para verlos."
 contract_accepted: "%prefix%<green>¡Contrato aceptado! Revisa tu progreso en /contracts."
 contract_completed: "%prefix%<gold>¡Contrato completado! Has recibido %reward% de recompensa."
-contract_limit_reached: "%prefix%<red>Has alcanzado el límite de contratos activos."
+contract_limit_reached: "%prefix%<red>Has alcanzado el límite de contratos para este tipo de misión."
 daily_mission_progress_lost: "%prefix%<yellow>El progreso de tus misiones diarias no completadas ha sido reiniciado."
 weekly_mission_progress_lost: "%prefix%<yellow>El progreso de tu misión semanal no completada ha sido reiniciado."
 actionbar_progress: "<#32CD32>Progreso de Misión: <white>%mission% (%current%/%required%)"
 
-# --- GUI ---
-gui-title: "Panel de Contratos"
-gui_available_title: "<green>Contratos Disponibles <gray>(%accepted%/%max%)"
-gui_active_title: "<yellow>Contratos Activos"
-gui_click_to_accept: "<gray>» <white>¡Haz clic para aceptar!"
-gui_reward: "<gold>Recompensa: <yellow>%reward%"
-gui_progress: "<gray>Progreso: <green>%current%<gray>/<green>%required%"
+# --- Textos para la GUI ---
+# Menú Principal
+gui.main.title: "Panel de Contratos"
+gui.main.daily.name: "<#32CD32>Contratos Diarios"
+gui.main.daily.lore:
+  - "<gray>Contratos que se reinician"
+  - "<gray>cada 24 horas."
+  - " "
+  - "<yellow>¡Haz clic para ver!"
+gui.main.weekly.name: "<#1E90FF>Contratos Semanales"
+gui.main.weekly.lore:
+  - "<gray>Contratos de mayor recompensa"
+  - "<gray>disponibles cada 7 días."
+  - " "
+  - "<yellow>¡Haz clic para ver!"
+gui.main.special.name: "<#AA00AA>Contratos Especiales"
+gui.main.special.lore:
+  - "<gray>Contratos únicos y desafiantes"
+  - "<gray>con recompensas legendarias."
+  - " "
+  - "<yellow>¡Haz clic para ver!"
+gui.main.active.name: "<#FFD700>Mis Contratos Activos"
+gui.main.active.lore:
+  - "<gray>Revisa el progreso de tus"
+  - "<gray>contratos aceptados."
+  - " "
+  - "<yellow>¡Haz clic para ver!"
+
+# Sub-Menús (Listas de Contratos)
+gui.submenu.title.daily: "Contratos Diarios"
+gui.submenu.title.weekly: "Contratos Semanales"
+gui.submenu.title.special: "Contratos Especiales"
+gui.submenu.title.active: "Mis Contratos Activos"
+gui.submenu.lore.can-accept: "<gray>Puedes aceptar <yellow>%amount%<gray> de este tipo."
+gui.submenu.lore.back: "<red>Volver al Menú Principal"
+gui.submenu.item.click-to-accept: "<yellow>¡Haz clic para aceptar!"
 
 # Formatos de Misión
 mission-formats:
@@ -24,12 +53,18 @@ mission-formats:
   FARM: "Obtener %amount% de %target%"
   DELIVER_MMOITEM: "Entregar %amount% de %target%"
 
-# Claves de traducción para objetivos
+# Claves de traducción para objetivos (Ejemplo)
 translation-keys:
   ZOMBIE: "Zombis"
   SKELETON: "Esqueletos"
   SkeletalKnight: "Caballeros Esqueléticos"
   AncientGolem: "Golem Antiguo"
+  STONE: "Piedra"
+  DIAMOND_ORE: "Mena de Diamante"
+  OAK_LOG: "Tronco de Roble"
+  WHEAT: "Trigo"
+  "MATERIAL.STEEL_INGOT": "Lingote de Acero"
+  "SWORD.CUTLASS": "Sable"
 
 # --- Mensajes de Administrador ---
 no-permission: "%prefix%<red>No tienes permiso para ejecutar ese comando."

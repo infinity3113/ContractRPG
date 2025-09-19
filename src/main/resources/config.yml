@@ -7,7 +7,6 @@ daily-missions:
   # ¿Cuántas de las misiones ofrecidas puede aceptar el jugador cada día?
   selectable-amount: 2
   # Si es 'true', las misiones diarias no completadas se eliminarán cuando se ofrezcan nuevas.
-  # Si es 'false', el jugador conservará el progreso de las misiones que no haya terminado.
   reset-unfinished-on-new-offer: true
 
 weekly-missions:
@@ -15,14 +14,17 @@ weekly-missions:
   offered-amount: 3
   # ¿Cuántas de las misiones semanales puede aceptar el jugador cada semana?
   selectable-amount: 1
-  # Si es 'true', la misión semanal no completada se eliminará cuando se ofrezca una nueva.
   reset-unfinished-on-new-offer: true
+
+# ¡NUEVO! Sección para misiones especiales
+special-missions:
+  offered-amount: 2
+  selectable-amount: 1
 
 # ID del NPC de Citizens que aceptará las entregas de contratos.
 delivery-npc-id: -1
 
 # --- Configuración de Almacenamiento ---
-# Elige dónde se guardarán los datos de los jugadores.
 # Opciones disponibles: "yaml", "sqlite"
 storage:
   type: "yaml"

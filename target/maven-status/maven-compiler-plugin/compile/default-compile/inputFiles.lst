@@ -5,6 +5,7 @@ C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\util\MessageUtils.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\data\StorageManager.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\data\YamlStorage.java
+C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\listeners\GUIListener.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\listeners\NPCListener.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\listeners\PlayerListener.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\commands\ContractCommand.java
@@ -16,3 +17,4 @@ C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\gui\ContractGUI.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\listeners\MythicMobListener.java
 C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\managers\ConfigUpdater.java
+C:\Users\pikac\Documents\Proyectos Plugin\ContractRPG\src\main\java\com\infinity3113\contractrpg\managers\GUIManager.java

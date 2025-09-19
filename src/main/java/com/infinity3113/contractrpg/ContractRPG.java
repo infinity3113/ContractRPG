@@ -8,10 +8,12 @@ import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.data.SqliteStorage;
 import com.infinity3113.contractrpg.data.StorageManager;
 import com.infinity3113.contractrpg.data.YamlStorage;
+import com.infinity3113.contractrpg.listeners.GUIListener;
 import com.infinity3113.contractrpg.listeners.MythicMobListener;
 import com.infinity3113.contractrpg.listeners.NPCListener;
 import com.infinity3113.contractrpg.listeners.PlayerListener;
 import com.infinity3113.contractrpg.managers.ConfigUpdater;
+import com.infinity3113.contractrpg.managers.GUIManager;
 import com.infinity3113.contractrpg.managers.LangManager;
 import com.infinity3113.contractrpg.util.MessageUtils;
 import org.bukkit.Bukkit;
@@ -30,6 +32,7 @@ public final class ContractRPG extends JavaPlugin {
     private ContractManager contractManager;
     private LangManager langManager;
     private StorageManager storageManager;
+    private GUIManager guiManager; // Nueva variable de instancia
 
     @Override
     public void onEnable() {
@@ -47,6 +50,7 @@ public final class ContractRPG extends JavaPlugin {
         this.langManager.loadLanguages();
 
         this.contractManager = new ContractManager(this);
+        this.guiManager = new GUIManager(this); // Inicializar el nuevo manager
 
         String storageType = getConfig().getString("storage.type", "yaml").toLowerCase();
         if (storageType.equals("sqlite")) {
@@ -59,6 +63,7 @@ public final class ContractRPG extends JavaPlugin {
 
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new NPCListener(this), this);
+        getServer().getPluginManager().registerEvents(new GUIListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null) {
             getServer().getPluginManager().registerEvents(new MythicMobListener(this), this);
@@ -78,18 +83,13 @@ public final class ContractRPG extends JavaPlugin {
         getLogger().info("ContractRPG has been disabled!");
     }
 
-    /**
-     * Lógica centralizada para reiniciar las misiones diarias y semanales.
-     */
     public void performMissionReset() {
         boolean resetDaily = getConfig().getBoolean("daily-missions.reset-unfinished-on-new-offer", false);
         boolean resetWeekly = getConfig().getBoolean("weekly-missions.reset-unfinished-on-new-offer", false);
-
         Calendar checkTime = Calendar.getInstance();
         boolean isWeeklyResetDay = (checkTime.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
 
         getLogger().info("Executing mission reset task...");
-
         for (Player player : Bukkit.getOnlinePlayers()) {
             PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
             if (playerData == null) continue;
@@ -98,16 +98,13 @@ public final class ContractRPG extends JavaPlugin {
             boolean weeklyProgressLost = false;
 
             Set<String> activeContracts = new HashSet<>(playerData.getActiveContracts().keySet());
-
             for (String contractId : activeContracts) {
                 Contract contract = getContractManager().getContract(contractId);
                 if (contract == null) continue;
-
                 if (resetDaily && contract.getContractType() == ContractType.DAILY) {
                     playerData.removeContract(contractId);
                     dailyProgressLost = true;
                 }
-
                 if (isWeeklyResetDay && resetWeekly && contract.getContractType() == ContractType.WEEKLY) {
                     playerData.removeContract(contractId);
                     weeklyProgressLost = true;
@@ -134,37 +131,33 @@ public final class ContractRPG extends JavaPlugin {
         resetTime.set(Calendar.MINUTE, 0);
         resetTime.set(Calendar.SECOND, 0);
         resetTime.set(Calendar.MILLISECOND, 0);
-
         if (now.after(resetTime)) {
             resetTime.add(Calendar.DATE, 1);
         }
-
         long delayInTicks = (resetTime.getTimeInMillis() - now.getTimeInMillis()) / 50;
         long periodInTicks = 24L * 60L * 60L * 20L;
-
         new BukkitRunnable() {
             @Override
             public void run() {
-                performMissionReset(); // Llama al método centralizado
+                performMissionReset();
             }
         }.runTaskTimer(this, delayInTicks, periodInTicks);
-
         getLogger().info("Mission reset timer has been scheduled successfully.");
     }
 
     public static ContractRPG getInstance() {
         return instance;
     }
-
     public ContractManager getContractManager() {
         return contractManager;
     }
-
     public LangManager getLangManager() {
         return langManager;
     }
-
     public StorageManager getStorageManager() {
         return storageManager;
+    }
+    public GUIManager getGuiManager() {
+        return guiManager;
     }
 }

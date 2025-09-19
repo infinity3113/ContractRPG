@@ -9,10 +9,12 @@ import com.infinity3113.contractrpg.util.MessageUtils;
 import com.infinity3113.contractrpg.util.ProgressBar;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,23 +25,22 @@ public class ContractGUI {
     private final ContractRPG plugin;
     private final Player player;
     private final ContractManager contractManager;
+    private final NamespacedKey contractIdKey;
 
     public ContractGUI(ContractRPG plugin, Player player) {
         this.plugin = plugin;
         this.player = player;
         this.contractManager = plugin.getContractManager();
+        this.contractIdKey = new NamespacedKey(plugin, "contract-id");
     }
 
     public void open() {
-        // Usa el método de parseo de MessageUtils para el título
         Inventory gui = Bukkit.createInventory(null, 54, MessageUtils.parse(plugin.getLangManager().getMessage("gui-title")));
         
-        // Poblar la GUI con los ítems
         addContractItems(gui, ContractType.DAILY, 10);
         addContractItems(gui, ContractType.WEEKLY, 19);
         addContractItems(gui, ContractType.SPECIAL, 28);
         
-        // Añadir paneles decorativos
         ItemStack grayPane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = grayPane.getItemMeta();
         meta.setDisplayName(" ");
@@ -65,12 +66,10 @@ public class ContractGUI {
             ItemStack item = new ItemStack(Material.WRITABLE_BOOK);
             ItemMeta meta = item.getItemMeta();
             
-            // CORRECCIÓN: Usar MessageUtils.parse() para procesar colores modernos
             meta.setDisplayName(MessageUtils.parse(contract.getDisplayName()));
             
             List<String> lore = new ArrayList<>();
             for(String line : contract.getDescription()){
-                // CORRECCIÓN: Usar MessageUtils.parse() aquí también
                 lore.add(MessageUtils.parse(line));
             }
             lore.add(" ");
@@ -82,13 +81,17 @@ public class ContractGUI {
                 lore.add(ProgressBar.create(progress, total, 20, "|", "&a", "&c"));
             } else {
                  lore.add(MessageUtils.parse("<yellow>Status: <green>Disponible"));
+                 lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("gui_click_to_accept")));
             }
+            
+            // AÑADIDO: Guardar el ID del contrato en el ítem
+            meta.getPersistentDataContainer().set(contractIdKey, PersistentDataType.STRING, contract.getId());
             
             meta.setLore(lore);
             item.setItemMeta(meta);
             gui.setItem(slot, item);
             slot++;
-            if((slot + 1) % 9 == 0) slot += 2; // Mover a la siguiente fila
+            if((slot + 1) % 9 == 0) slot += 2;
         }
     }
 }

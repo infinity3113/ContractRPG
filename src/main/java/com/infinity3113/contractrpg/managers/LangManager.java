@@ -13,15 +13,17 @@ public class LangManager {
     private final ContractRPG plugin;
     private final Map<String, FileConfiguration> langConfigs = new HashMap<>();
     private String defaultLang;
+    private String prefix;
 
     public LangManager(ContractRPG plugin) {
         this.plugin = plugin;
-        this.defaultLang = plugin.getConfig().getString("default-language", "en");
     }
 
     public void loadLanguages() {
         langConfigs.clear();
-        this.defaultLang = plugin.getConfig().getString("default-language", "en");
+        // CORRECCIÓN: Usar la clave "language" para que coincida con config.yml
+        this.defaultLang = plugin.getConfig().getString("language", "en");
+
         File langFolder = new File(plugin.getDataFolder(), "lang");
         if (!langFolder.exists()) {
             langFolder.mkdirs();
@@ -37,6 +39,8 @@ public class LangManager {
                 langConfigs.put(langName, YamlConfiguration.loadConfiguration(file));
             }
         }
+        // Cargar el prefijo después de cargar los archivos
+        this.prefix = getMessageFromFile("prefix");
     }
 
     private void saveDefaultLangFile(String fileName) {
@@ -46,14 +50,21 @@ public class LangManager {
         }
     }
 
-    public String getMessage(String path) {
+    // Método privado para obtener el string crudo del archivo sin procesar el prefijo
+    private String getMessageFromFile(String path) {
         FileConfiguration config = langConfigs.get(defaultLang);
         if (config == null || !config.contains(path)) {
-            config = langConfigs.get("en");
-            if(config == null) {
+            config = langConfigs.get("en"); // Fallback a inglés
+            if (config == null) {
                 return "<red>Language file for '" + defaultLang + "' or 'en' not found!";
             }
         }
         return config.getString(path, "<red>Missing message: " + path);
+    }
+
+    public String getMessage(String path) {
+        String message = getMessageFromFile(path);
+        // CORRECCIÓN: Reemplazar el placeholder %prefix% automáticamente
+        return message.replace("%prefix%", this.prefix);
     }
 }

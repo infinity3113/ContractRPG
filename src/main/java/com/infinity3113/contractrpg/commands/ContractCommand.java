@@ -2,8 +2,8 @@ package com.infinity3113.contractrpg.commands;
 
 import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.data.PlayerData;
-import com.infinity3113.contractrpg.gui.ContractGUI;
 import com.infinity3113.contractrpg.managers.LangManager;
+import com.infinity3113.contractrpg.util.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -33,10 +33,9 @@ public class ContractCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length > 0) {
-            // Subcomando de recarga
             if (args[0].equalsIgnoreCase("reload")) {
                 if (!player.hasPermission("contractrpg.reload")) {
-                    player.sendMessage(langManager.getMessage("no-permission"));
+                    MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
                 plugin.reloadConfig();
@@ -50,29 +49,28 @@ public class ContractCommand implements CommandExecutor {
                         for (String contractId : activeContractsCopy) {
                             if (plugin.getContractManager().getContract(contractId) == null) {
                                 playerData.removeContract(contractId);
-                                onlinePlayer.sendMessage(langManager.getMessage("contract-removed-on-reload").replace("%contract%", contractId));
+                                MessageUtils.sendMessage(onlinePlayer, langManager.getMessage("contract-removed-on-reload").replace("%contract%", contractId));
                             }
                         }
                     }
                 }
-                player.sendMessage(langManager.getMessage("plugin-reloaded"));
+                MessageUtils.sendMessage(player, langManager.getMessage("plugin-reloaded"));
                 return true;
             }
 
-            // ¡NUEVO! Subcomando de reseteo
             if (args[0].equalsIgnoreCase("reset")) {
                 if (!player.hasPermission("contractrpg.admin.reset")) {
-                    player.sendMessage(langManager.getMessage("no-permission"));
+                    MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
                 plugin.performMissionReset();
-                player.sendMessage(langManager.getMessage("missions-manually-reset"));
+                MessageUtils.sendMessage(player, langManager.getMessage("missions-manually-reset"));
                 return true;
             }
         }
 
-        // Si no hay argumentos o no coinciden, abre la GUI
-        new ContractGUI(plugin, player).open();
+        // Abrir el nuevo menú principal
+        plugin.getGuiManager().openMainMenu(player);
         return true;
     }
 }
