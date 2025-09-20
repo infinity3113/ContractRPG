@@ -19,7 +19,7 @@ stats_message:
   - "<#FFD700>                           Estadísticas de Contratos"
   - ""
   - "    <gray>Nivel: <green>%level%"
-  - "    <gray>Puntos de Contrato: <#AA00AA>%contract_points%" # <-- LÍNEA MODIFICADA/AÑADIDA
+  - "    <gray>Puntos de Contrato: <#AA00AA>%contract_points%"
   - "    <gray>Experiencia: <yellow>%current_exp%<gray> / <gray>%required_exp%"
   - ""
   - "<strikethrough>                                                                        </strikethrough>"
@@ -55,7 +55,7 @@ gui.main.active.lore:
 gui.main.stats.name: "<#A1FFFB>Tu Progreso"
 gui.main.stats.lore:
   - "<gray>Nivel: <green>%level%"
-  - "<gray>Puntos de Contrato: <#AA00AA>%contract_points%" # <-- LÍNEA AÑADIDA
+  - "<gray>Puntos de Contrato: <#AA00AA>%contract_points%"
   - ""
   - "%exp_bar%"
   - "<yellow>%current_exp%<gray> / <yellow>%required_exp% EXP"
@@ -68,6 +68,7 @@ gui.submenu.title.active: "Mis Contratos Activos"
 gui.submenu.lore.can-accept: "<gray>Puedes aceptar <yellow>%amount%<gray> de este tipo."
 gui.submenu.lore.back: "<red>Volver al Menú Principal"
 gui.submenu.item.click-to-accept: "<yellow>¡Haz clic para aceptar!"
+gui.submenu.item.contract-points: "<gray>- <#FFD700>%points% Puntos"
 
 # Formatos de Misión
 mission-formats:

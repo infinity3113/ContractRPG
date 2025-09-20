@@ -17,7 +17,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,10 +58,19 @@ public class GUIManager {
         int contractsToOffer = plugin.getConfig().getInt(offeredAmountPath, 3);
         List<Contract> offeredContracts = plugin.getContractManager().getOfferedContracts(playerData, type, contractsToOffer);
 
-        int slot = 0;
+        // --- CORRECCIÓN AQUÍ ---
+        // Se inicia el contador en el slot 10 (dentro del borde)
+        int slot = 10;
         for (Contract contract : offeredContracts) {
-            if (slot >= 45) break;
-            gui.setItem(slot++, createContractItem(contract, playerData));
+            // Se asegura de no salirse del área de contratos
+            if (slot >= 44) break;
+            gui.setItem(slot, createContractItem(contract, playerData));
+
+            slot++;
+            // Si el siguiente slot toca un borde, se lo salta
+            if (slot % 9 == 8) {
+                slot += 2;
+            }
         }
 
         addNavigationButtons(gui, type, "go_back");
@@ -76,15 +84,23 @@ public class GUIManager {
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (playerData == null) return;
 
-        int slot = 0;
+        // --- CORRECCIÓN AQUÍ ---
+        // Se inicia el contador en el slot 10 (dentro del borde)
+        int slot = 10;
         if (playerData.getActiveContracts().isEmpty()) {
             // Puedes agregar un ítem de "no tienes contratos" aquí si quieres
         } else {
             for (String contractId : playerData.getActiveContracts().keySet()) {
-                if (slot >= 45) break;
+                // Se asegura de no salirse del área de contratos
+                if (slot >= 44) break;
                 Contract contract = plugin.getContractManager().getContract(contractId);
                 if (contract != null) {
-                    gui.setItem(slot++, createContractItem(contract, playerData));
+                    gui.setItem(slot, createContractItem(contract, playerData));
+                    slot++;
+                    // Si el siguiente slot toca un borde, se lo salta
+                    if (slot % 9 == 8) {
+                        slot += 2;
+                    }
                 }
             }
         }
@@ -114,7 +130,7 @@ public class GUIManager {
             String processedLine = line
                     .replace("%level%", String.valueOf(playerData.getLevel()))
                     .replace("%contract_points%", String.valueOf(playerData.getContractPoints()))
-                    .replace("%exp_bar%", ProgressBar.create(playerData.getExperience(), playerData.getRequiredExperience()))
+                    .replace("%exp_bar%", ProgressBar.create(playerData.getExperience(), playerData.getRequiredExperience(), 20, "|", "<green>", "<gray>"))
                     .replace("%current_exp%", String.valueOf(playerData.getExperience()))
                     .replace("%required_exp%", String.valueOf(playerData.getRequiredExperience()));
             lore.add(MessageUtils.parse(processedLine));
@@ -136,7 +152,7 @@ public class GUIManager {
             item.setType(Material.WRITTEN_BOOK);
             int progress = playerData.getContractProgress(contract.getId());
             int required = contract.getMissionRequirement();
-            lore.add(MessageUtils.parse(ProgressBar.create(progress, required)));
+            lore.add(MessageUtils.parse(ProgressBar.create(progress, required, 20, "|", "<green>", "<red>")));
             lore.add(MessageUtils.parse("<gray>Progreso: <yellow>" + progress + "/" + required));
         } else {
             lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.item.click-to-accept")));
@@ -149,7 +165,9 @@ public class GUIManager {
              lore.add(MessageUtils.parse("<gray>- <yellow>" + contract.getExperienceReward() + " EXP"));
         }
         if (contract.getContractPointsReward() > 0) {
-            lore.add(MessageUtils.parse("<gray>- <#AA00AA>" + contract.getContractPointsReward() + " Puntos"));
+            String pointsFormat = plugin.getLangManager().getMessage("gui.submenu.item.contract-points");
+            String pointsLine = pointsFormat.replace("%points%", String.valueOf(contract.getContractPointsReward()));
+            lore.add(MessageUtils.parse(pointsLine));
         }
         
         meta.setLore(lore);
