@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
+// Se importan las clases de la tienda que creamos
 import com.infinity3113.contractrpg.shop.ShopGUI;
 import com.infinity3113.contractrpg.shop.ShopListener;
 import com.infinity3113.contractrpg.shop.ShopManager;
@@ -36,8 +37,10 @@ public final class ContractRPG extends JavaPlugin {
     private StorageManager storageManager;
     private GUIManager guiManager;
     private PlaceholderManager placeholderManager;
-    private ShopManager shopManager; // <-- AÑADE ESTA LÍNEA
-    private ShopGUI shopGUI; // <-- AÑADE ESTA LÍNEA
+
+    // Variables para la nueva tienda
+    private ShopManager shopManager;
+    private ShopGUI shopGUI;
 
     @Override
     public void onEnable() {
@@ -54,8 +57,9 @@ public final class ContractRPG extends JavaPlugin {
         this.langManager = new LangManager(this);
         this.langManager.loadLanguages();
 		
-        this.shopManager = new ShopManager(this); // <-- AÑADE ESTA LÍNEA
-        this.shopGUI = new ShopGUI(this); // <-- AÑADE ESTA LÍNEA
+        // Inicializamos los componentes de la tienda
+        this.shopManager = new ShopManager(this);
+        this.shopGUI = new ShopGUI(this);
 
         this.contractManager = new ContractManager(this);
         this.guiManager = new GUIManager(this);
@@ -73,7 +77,8 @@ public final class ContractRPG extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new NPCListener(this), this);
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
 		
-        getServer().getPluginManager().registerEvents(new ShopListener(this), this); // <-- AÑADE ESTA LÍNEA
+        // Registramos el listener para que los menús de la tienda funcionen
+        getServer().getPluginManager().registerEvents(new ShopListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null) {
             getServer().getPluginManager().registerEvents(new MythicMobListener(this), this);
@@ -105,14 +110,14 @@ public final class ContractRPG extends JavaPlugin {
 
         // Otorgar recompensas
         playerData.addExperience(contract.getExperienceReward());
-        playerData.addContractPoints(contract.getContractPointsReward()); // <-- AÑADIDO
+        playerData.addContractPoints(contract.getContractPointsReward());
 
         // Construir mensaje de recompensas
         String rewardsString = String.join("<gray>, <white>", contract.getDisplayRewards());
         if (contract.getExperienceReward() > 0) {
             rewardsString += "<gray>, <white>" + contract.getExperienceReward() + " EXP";
         }
-        if (contract.getContractPointsReward() > 0) { // <-- AÑADIDO
+        if (contract.getContractPointsReward() > 0) {
             rewardsString += "<gray>, <white>" + contract.getContractPointsReward() + " Puntos de Contrato";
         }
         

@@ -1,66 +1,88 @@
 package com.infinity3113.contractrpg.shop;
 
 import com.infinity3113.contractrpg.ContractRPG;
-import com.infinity3113.contractrpg.util.MessageUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.logging.Level;
 
 public class ShopManager {
 
     private final ContractRPG plugin;
-    private File shopFile;
-    private FileConfiguration shopConfig;
-    public final Map<UUID, String> adminEditing = new HashMap<>();
+    private File configFile;
+    private FileConfiguration config;
+    private final Map<Integer, ShopItem> shopItems;
 
     public ShopManager(ContractRPG plugin) {
         this.plugin = plugin;
-        this.shopFile = new File(plugin.getDataFolder(), "shop.yml");
-        if (!shopFile.exists()) {
-            plugin.saveResource("shop.yml", false);
-        }
-        this.shopConfig = YamlConfiguration.loadConfiguration(shopFile);
-    }
-
-    public void saveItem(String id, ItemStack item, int price, int stockResetSeconds, int slot) {
-        shopConfig.set("items." + id + ".item", ItemSerializer.serialize(item));
-        shopConfig.set("items." + id + ".price", price);
-        shopConfig.set("items." + id + ".stock-reset-seconds", stockResetSeconds);
-        shopConfig.set("items." + id + ".slot", slot);
-        saveConfig();
-    }
-    
-    public void removeItem(String id) {
-        shopConfig.set("items." + id, null);
-        saveConfig();
-    }
-
-    public ConfigurationSection getItemsSection() {
-        return shopConfig.getConfigurationSection("items");
-    }
-
-    public FileConfiguration getConfig() {
-        return shopConfig;
-    }
-
-    public void saveConfig() {
-        try {
-            shopConfig.save(shopFile);
-        } catch (IOException e) {
-            plugin.getLogger().severe("Could not save shop.yml!");
-            e.printStackTrace();
-        }
+        this.shopItems = new HashMap<>();
+        reloadConfig();
     }
 
     public void reloadConfig() {
-        this.shopConfig = YamlConfiguration.loadConfiguration(shopFile);
+        if (configFile == null) {
+            configFile = new File(plugin.getDataFolder(), "shop.yml");
+        }
+        if (!configFile.exists()) {
+            plugin.saveResource("shop.yml", false);
+        }
+        config = YamlConfiguration.loadConfiguration(configFile);
+        loadItems();
+    }
+
+    public void saveItems() {
+        config.set("items", null); // Limpia la sección de items antiguos
+        for (Map.Entry<Integer, ShopItem> entry : shopItems.entrySet()) {
+            config.set("items." + entry.getKey(), ItemSerializer.serialize(entry.getValue()));
+        }
+        try {
+            config.save(configFile);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "No se pudo guardar la tienda en shop.yml", e);
+        }
+    }
+
+    private void loadItems() {
+        shopItems.clear();
+        ConfigurationSection itemsSection = config.getConfigurationSection("items");
+        if (itemsSection != null) {
+            for (String key : itemsSection.getKeys(false)) {
+                try {
+                    int slot = Integer.parseInt(key);
+                    ConfigurationSection itemSection = itemsSection.getConfigurationSection(key);
+                    if (itemSection != null) {
+                        shopItems.put(slot, ItemSerializer.deserialize(itemSection));
+                    }
+                } catch (NumberFormatException e) {
+                    plugin.getLogger().warning("Clave de item inválida en shop.yml: " + key);
+                }
+            }
+        }
+    }
+
+    public FileConfiguration getConfig() {
+        return config;
+    }
+
+    public Map<Integer, ShopItem> getShopItems() {
+        return shopItems;
+    }
+
+    public ShopItem getItem(int slot) {
+        return shopItems.get(slot);
+    }
+    
+    public void setItem(int slot, ShopItem item) {
+        if (item == null) {
+            shopItems.remove(slot);
+        } else {
+            shopItems.put(slot, item);
+        }
+        saveItems();
     }
 }

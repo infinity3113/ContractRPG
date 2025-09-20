@@ -1,7 +1,18 @@
-# Configuración de la Tienda de Contratos
+# ============================================================ #
+#                Configuración de la Tienda                    #
+# ============================================================ #
+
+# Título del inventario de la tienda para los jugadores.
 shop-title: "<bold><#F52E27>Tienda de Contratos</bold>"
-shop-size: 54 # Tamaño del inventario (múltiplos de 9)
+
+# Título del inventario del editor de la tienda para administradores.
+editor-title: "<bold><#27A6F5>Editor de la Tienda</bold>"
+
+# Tamaño del inventario (debe ser un múltiplo de 9, máximo 54).
+# IMPORTANTE: Si cambias esto, los items existentes podrían descolocarse.
+shop-size: 54
 
 # Aquí se guardarán los items de la tienda.
-# Puedes dejarlo vacío, se generará al añadir items con /contract shopedit
+# No modifiques esta sección manualmente a menos que sepas lo que haces.
+# Usa el comando /contract shopedit para gestionar los items.
 items: {}

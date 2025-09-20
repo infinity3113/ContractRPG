@@ -4,15 +4,12 @@ import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.managers.LangManager;
 import com.infinity3113.contractrpg.util.MessageUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ContractCommand implements CommandExecutor {
 
@@ -97,7 +94,7 @@ public class ContractCommand implements CommandExecutor {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                plugin.getShopGUI().openShop(player);
+                plugin.getShopGUI().openShop(player); // Necesitarás implementar este método en ShopGUI
                 return true;
             }
 
@@ -112,7 +109,6 @@ public class ContractCommand implements CommandExecutor {
             // ===== FIN DEL CÓDIGO DE LA TIENDA =====
         }
         
-        // Se corrige la llamada para abrir el menú correcto.
         plugin.getGuiManager().openMainGUI(player);
         return true;
     }

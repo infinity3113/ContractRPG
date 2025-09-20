@@ -1,11 +1,9 @@
 package com.infinity3113.contractrpg.shop;
 
 import com.infinity3113.contractrpg.ContractRPG;
-import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.util.MessageUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,183 +12,168 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 public class ShopListener implements Listener {
+
     private final ContractRPG plugin;
-    private final NamespacedKey shopItemIdKey;
+    private final Map<UUID, Integer> editingPrice = new HashMap<>();
 
     public ShopListener(ContractRPG plugin) {
         this.plugin = plugin;
-        this.shopItemIdKey = new NamespacedKey(plugin, "shop-item-id");
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        String shopTitle = MessageUtils.parse(plugin.getShopManager().getConfig().getString("shop-title", "<bold>Tienda</bold>"));
-        String editorTitle = MessageUtils.parse("<bold>Editor de Tienda</bold>");
-        String viewTitle = event.getView().getTitle();
+        String viewTitle = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
 
-        if (!viewTitle.equals(shopTitle) && !viewTitle.equals(editorTitle)) return;
-        
+        if (viewTitle.contains("Editor de la Tienda")) {
+            handleMainEditorClick(event);
+        } else if (viewTitle.contains("Editando Item")) {
+            handleItemEditorClick(event);
+        }
+    }
+
+    private void handleMainEditorClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        ItemStack cursorItem = event.getCursor();
+        ItemStack currentItem = event.getCurrentItem();
 
-        if (viewTitle.equals(shopTitle)) {
-            event.setCancelled(true);
-            if (event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) return;
-            handleShopClick(player, event.getCurrentItem());
+        if (event.getClickedInventory() == null) return;
+
+        // Si el jugador hace click en su propio inventario, lo permitimos y no hacemos nada más.
+        if (event.getClickedInventory().equals(player.getInventory())) {
             return;
         }
 
-        if (viewTitle.equals(editorTitle)) {
-            if (event.getClickedInventory() == event.getView().getBottomInventory()) {
-                return;
-            }
+        // --- LÓGICA PARA AÑADIR UN ITEM (DRAG & DROP) ---
+        // Si el jugador tiene un item en el cursor y hace click en un slot vacío del editor.
+        if (cursorItem != null && cursorItem.getType() != Material.AIR && (currentItem == null || currentItem.getType() == Material.AIR)) {
+            // No cancelamos el evento. Bukkit se encargará de colocar el item.
+            ShopItem newShopItem = new ShopItem(cursorItem.clone(), 0, 1, false);
+            plugin.getShopManager().setItem(event.getSlot(), newShopItem);
 
-            if (event.getClick() == ClickType.LEFT && event.getCursor() != null && !event.getCursor().getType().isAir() && event.getCurrentItem() == null) {
-                event.setCancelled(true);
-                handleEditorAddItem(player, event.getCursor(), event.getSlot());
-                return;
-            }
+            // Forzamos una actualización de la GUI en el siguiente tick para que el lore se muestre.
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> plugin.getShopGUI().openEditor(player), 1L);
+            return; // Salimos de la función para no cancelar el evento.
+        }
 
-            if (event.getClick() == ClickType.SHIFT_LEFT && event.getCurrentItem() != null && !event.getCurrentItem().getType().isAir()) {
-                 if (event.getCurrentItem().hasItemMeta() && event.getCurrentItem().getItemMeta().getPersistentDataContainer().has(shopItemIdKey, PersistentDataType.STRING)) {
-                    event.setCancelled(true);
-                    handleEditorRemoveItem(player, event.getCurrentItem());
-                    return;
+        // Si no estamos añadiendo un item, cancelamos todos los demás tipos de clicks en el editor.
+        event.setCancelled(true);
+
+        if (currentItem == null || currentItem.getType() == Material.AIR) return;
+
+        // Evitar interacciones con el item de información.
+        if (event.getSlot() == event.getInventory().getSize() - 1) return;
+
+        ShopItem shopItem = plugin.getShopManager().getItem(event.getSlot());
+        if (shopItem == null) return;
+
+        // Editar item (Click Izquierdo)
+        if (event.getClick() == ClickType.LEFT) {
+            plugin.getShopGUI().openItemEditor(player, event.getSlot(), shopItem);
+        }
+
+        // Eliminar item (Click Derecho)
+        if (event.getClick() == ClickType.RIGHT) {
+            plugin.getShopManager().setItem(event.getSlot(), null);
+            plugin.getShopGUI().openEditor(player);
+        }
+    }
+
+    private void handleItemEditorClick(InventoryClickEvent event) {
+        event.setCancelled(true);
+        Player player = (Player) event.getWhoClicked();
+        String title = PlainTextComponentSerializer.plainText().serialize(event.getView().title());
+        int slot;
+        try {
+            slot = Integer.parseInt(title.replaceAll("[^0-9]", ""));
+        } catch (NumberFormatException e) {
+            return; // No se pudo parsear el slot, salir.
+        }
+
+        ShopItem shopItem = plugin.getShopManager().getItem(slot);
+        if (shopItem == null) {
+            player.closeInventory();
+            MessageUtils.sendMessage(player, "<red>Este item ya no existe en la tienda.</red>");
+            return;
+        }
+
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType() == Material.AIR) return;
+
+        switch (clicked.getType()) {
+            case GOLD_INGOT:
+                editingPrice.put(player.getUniqueId(), slot);
+                player.closeInventory();
+                MessageUtils.sendMessage(player, "<gold>Escribe el nuevo precio en el chat o escribe <red>'cancelar'</red>.</gold>");
+                break;
+            case CHEST:
+                int amount = (event.getClick() == ClickType.LEFT) ? 1 : -1;
+                if (event.isShiftClick()) amount *= 10;
+                if (event.getClick() == ClickType.MIDDLE) {
+                    shopItem.setInfiniteStock(!shopItem.isInfiniteStock());
+                } else {
+                    shopItem.setStock(Math.max(0, shopItem.getStock() + amount));
                 }
-            }
-            event.setCancelled(true);
+                plugin.getShopManager().setItem(slot, shopItem);
+                plugin.getShopGUI().openItemEditor(player, slot, shopItem);
+                break;
+            case BARRIER:
+                plugin.getShopGUI().openEditor(player);
+                break;
+            default:
+                break;
         }
     }
 
-    private void handleEditorAddItem(Player player, ItemStack cursorItem, int slot) {
-        ItemStack itemToAdd = cursorItem.clone();
-        itemToAdd.setAmount(1);
-        String uniqueId = "item_" + System.currentTimeMillis();
-
-        plugin.getShopManager().adminEditing.put(player.getUniqueId(), uniqueId + ";" + slot);
-        player.setMetadata("shop_item_to_add", new org.bukkit.metadata.FixedMetadataValue(plugin, itemToAdd));
-
-        player.closeInventory();
-        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.prompt-price"));
-    }
-
-    private void handleEditorRemoveItem(Player player, ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.getPersistentDataContainer().has(shopItemIdKey, PersistentDataType.STRING)) return;
-        
-        String itemId = meta.getPersistentDataContainer().get(shopItemIdKey, PersistentDataType.STRING);
-        if (itemId != null) {
-            plugin.getShopManager().removeItem(itemId);
-            MessageUtils.sendMessage(player, "<green>Ítem eliminado. Re-abriendo editor...");
-            
-            Bukkit.getScheduler().runTask(plugin, () -> plugin.getShopGUI().openEditor(player));
-        }
-    }
-
-    private void handleShopClick(Player player, ItemStack clickedItem) {
-        if (!clickedItem.hasItemMeta() || !clickedItem.getItemMeta().getPersistentDataContainer().has(shopItemIdKey, PersistentDataType.STRING)) return;
-
-        String itemId = clickedItem.getItemMeta().getPersistentDataContainer().get(shopItemIdKey, PersistentDataType.STRING);
-        ConfigurationSection itemSection = plugin.getShopManager().getItemsSection().getConfigurationSection(itemId);
-        if (itemSection == null) return;
-
-        PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
-        int price = itemSection.getInt("price");
-        long stockResetSeconds = itemSection.getLong("stock-reset-seconds");
-
-        if (playerData.getPurchasedShopItems().containsKey(itemId)) {
-            long purchaseTime = playerData.getPurchasedShopItems().get(itemId);
-            long cooldownMillis = TimeUnit.SECONDS.toMillis(stockResetSeconds);
-            if (System.currentTimeMillis() - purchaseTime < cooldownMillis) {
-                MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.on-cooldown"));
-                return;
-            }
-        }
-
-        if (playerData.getContractPoints() < price) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.no-funds"));
-            return;
-        }
-
-        playerData.setContractPoints(playerData.getContractPoints() - price);
-        playerData.addPurchasedShopItem(itemId);
-        
-        ItemStack purchasedItem = ItemSerializer.deserialize(itemSection.getString("item"));
-        player.getInventory().addItem(purchasedItem);
-        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.success.purchase").replace("%item%", purchasedItem.getItemMeta().getDisplayName()));
-        player.closeInventory();
-    }
-    
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        if (plugin.getShopManager().adminEditing.containsKey(uuid)) {
+        if (editingPrice.containsKey(player.getUniqueId())) {
             event.setCancelled(true);
-            String message = event.getMessage();
+            int slot = editingPrice.get(player.getUniqueId());
 
-            // Ejecutar la lógica en el hilo principal del servidor para evitar problemas
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                if (!plugin.getShopManager().adminEditing.containsKey(uuid)) return;
+            if (event.getMessage().equalsIgnoreCase("cancelar")) {
+                editingPrice.remove(player.getUniqueId());
+                MessageUtils.sendMessage(player, "<red>Edición de precio cancelada.</red>");
+                plugin.getServer().getScheduler().runTask(plugin, () -> plugin.getShopGUI().openEditor(player));
+                return;
+            }
 
-                if (message.equalsIgnoreCase("cancelar")) {
-                    plugin.getShopManager().adminEditing.remove(uuid);
-                    player.removeMetadata("shop_price_set", plugin);
-                    player.removeMetadata("shop_item_to_add", plugin);
-                    MessageUtils.sendMessage(player, "<red>Operación cancelada.");
-                    return;
-                }
-
-                String[] editData = plugin.getShopManager().adminEditing.get(uuid).split(";");
-                String itemId = editData[0];
-                int slot = Integer.parseInt(editData[1]);
-
-                if (!player.hasMetadata("shop_price_set")) {
-                    try {
-                        int price = Integer.parseInt(message);
-                        player.setMetadata("shop_price_set", new org.bukkit.metadata.FixedMetadataValue(plugin, price));
-                        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.prompt-cooldown"));
-                    } catch (NumberFormatException e) {
-                        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.error-invalid-number"));
+            try {
+                double newPrice = Double.parseDouble(event.getMessage());
+                if (newPrice < 0) {
+                    MessageUtils.sendMessage(player, "<red>El precio no puede ser negativo.</red>");
+                } else {
+                    ShopItem shopItem = plugin.getShopManager().getItem(slot);
+                    if (shopItem != null) {
+                        shopItem.setPrice(newPrice);
+                        plugin.getShopManager().setItem(slot, shopItem);
+                        MessageUtils.sendMessage(player, "<green>Precio actualizado a <gold>" + newPrice + "</gold>.</green>");
                     }
-                    return;
+                    editingPrice.remove(player.getUniqueId());
                 }
+            } catch (NumberFormatException e) {
+                MessageUtils.sendMessage(player, "<red>Por favor, introduce un número válido.</red>");
+            }
 
-                if (player.hasMetadata("shop_price_set")) {
-                    try {
-                        int cooldown = Integer.parseInt(message);
-                        int price = (int) player.getMetadata("shop_price_set").get(0).value();
-                        ItemStack item = (ItemStack) player.getMetadata("shop_item_to_add").get(0).value();
-
-                        plugin.getShopManager().saveItem(itemId, item, price, cooldown, slot);
-                        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.success"));
-
-                        plugin.getShopManager().adminEditing.remove(uuid);
-                        player.removeMetadata("shop_price_set", plugin);
-                        player.removeMetadata("shop_item_to_add", plugin);
-
-                    } catch (NumberFormatException e) {
-                        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.error-invalid-number"));
-                    }
+            plugin.getServer().getScheduler().runTask(plugin, () -> {
+                ShopItem updatedItem = plugin.getShopManager().getItem(slot);
+                if (updatedItem != null) {
+                    plugin.getShopGUI().openItemEditor(player, slot, updatedItem);
+                } else {
+                    plugin.getShopGUI().openEditor(player);
                 }
             });
         }
     }
-    
+
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        Player player = (Player) event.getPlayer();
-        if (plugin.getShopManager().adminEditing.containsKey(player.getUniqueId()) && !player.hasMetadata("shop_price_set")) {
-            plugin.getShopManager().adminEditing.remove(player.getUniqueId());
-            player.removeMetadata("shop_price_set", plugin);
-            player.removeMetadata("shop_item_to_add", plugin);
-        }
+        editingPrice.remove(event.getPlayer().getUniqueId());
     }
 }
