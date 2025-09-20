@@ -122,3 +122,20 @@ missions-manually-reset: "%prefix%<green>Has forzado el reinicio de las misiones
 # ===== LÍNEAS AÑADIDAS PARA EL COMANDO /contract placeholder =====
 placeholder-list-header: "<aqua>Placeholders Disponibles:"
 placeholder-list-format: "<gray>- <white>%placeholder%"
+
+# --- Mensajes de la Tienda ---
+shop:
+  item:
+    buyable: "<green>Precio: <gold>%price% Puntos"
+    no-funds: "<red>Precio: <gold>%price% Puntos"
+    cooldown: "<red>Enfriamiento: <yellow>%time%"
+  error:
+    on-cooldown: "%prefix%<red>Ya has comprado este objeto. Espera a que se reabastezca."
+    no-funds: "%prefix%<red>No tienes suficientes puntos para comprar esto."
+  success:
+    purchase: "%prefix%<green>Has comprado <white>%item%<green> exitosamente."
+  editor:
+    prompt-price: "%prefix%<yellow>Escribe el precio del item en el chat. Escribe 'cancelar' para abortar."
+    prompt-cooldown: "%prefix%<yellow>Ahora escribe el tiempo de enfriamiento en segundos."
+    error-invalid-number: "%prefix%<red>Entrada inválida. Por favor, introduce un número."
+    success: "%prefix%<green>¡Item añadido a la tienda exitosamente!"

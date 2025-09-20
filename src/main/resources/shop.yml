@@ -1,0 +1,7 @@
+# Configuración de la Tienda de Contratos
+shop-title: "<bold><#F52E27>Tienda de Contratos</bold>"
+shop-size: 54 # Tamaño del inventario (múltiplos de 9)
+
+# Aquí se guardarán los items de la tienda.
+# Puedes dejarlo vacío, se generará al añadir items con /contract shopedit
+items: {}

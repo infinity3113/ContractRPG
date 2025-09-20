@@ -23,6 +23,7 @@ public class PlayerData {
     private Map<String, Integer> activeContracts;
     private Set<String> completedDailyContracts;
     private Set<String> completedWeeklyContracts;
+    private Map<String, Long> purchasedShopItems; // <-- AÑADIDO PARA LA TIENDA
     private static final Gson gson = new GsonBuilder().create();
 
     public PlayerData(UUID uuid) {
@@ -33,6 +34,7 @@ public class PlayerData {
         this.activeContracts = new ConcurrentHashMap<>();
         this.completedDailyContracts = new HashSet<>();
         this.completedWeeklyContracts = new HashSet<>();
+        this.purchasedShopItems = new ConcurrentHashMap<>(); // <-- AÑADIDO PARA LA TIENDA
     }
     //GETTERS
     public UUID getUuid() { return uuid; }
@@ -42,6 +44,7 @@ public class PlayerData {
     public Map<String, Integer> getActiveContracts() { return activeContracts; }
     public Set<String> getCompletedDailyContracts() { return completedDailyContracts; }
     public Set<String> getCompletedWeeklyContracts() { return completedWeeklyContracts; }
+    public Map<String, Long> getPurchasedShopItems() { return purchasedShopItems; } // <-- AÑADIDO PARA LA TIENDA
 
     //SETTERS
     public void setLevel(int level) { this.level = level; }
@@ -50,6 +53,7 @@ public class PlayerData {
     public void setActiveContracts(Map<String, Integer> activeContracts) { this.activeContracts = activeContracts; }
     public void setCompletedDailyContracts(Set<String> contracts) { this.completedDailyContracts = contracts; }
     public void setCompletedWeeklyContracts(Set<String> contracts) { this.completedWeeklyContracts = contracts; }
+    public void setPurchasedShopItems(Map<String, Long> items) { this.purchasedShopItems = items; } // <-- AÑADIDO PARA LA TIENDA
 
     // LOGICA
     public void addExperience(int amount) {
@@ -59,6 +63,10 @@ public class PlayerData {
 
     public void addContractPoints(int amount) { // <-- AÑADIDO
         this.contractPoints += amount;
+    }
+
+    public void addPurchasedShopItem(String itemId) { // <-- AÑADIDO PARA LA TIENDA
+        this.purchasedShopItems.put(itemId, System.currentTimeMillis());
     }
 
     private void checkLevelUp() {
@@ -146,5 +154,19 @@ public class PlayerData {
                 completedWeeklyContracts.add(id);
             }
         }
+    }
+    
+    // ===== SERIALIZADORES PARA LA TIENDA AÑADIDOS =====
+    public String serializePurchasedShopItems() {
+        return gson.toJson(purchasedShopItems);
+    }
+
+    public void deserializePurchasedShopItems(String json) {
+        if (json == null || json.isEmpty()) {
+            this.purchasedShopItems = new ConcurrentHashMap<>();
+            return;
+        }
+        Type type = new TypeToken<ConcurrentHashMap<String, Long>>() {}.getType();
+        this.purchasedShopItems = gson.fromJson(json, type);
     }
 }

@@ -36,6 +36,7 @@ public class YamlStorage extends StorageManager {
                 playerData.deserializeActiveContracts(playerConfig.getString("active-contracts"));
                 playerData.deserializeCompletedDaily(playerConfig.getString("completed-daily"));
                 playerData.deserializeCompletedWeekly(playerConfig.getString("completed-weekly"));
+                playerData.deserializePurchasedShopItems(playerConfig.getString("purchased-shop-items")); // <-- MODIFICADO
 
             } else {
                 playerData = new PlayerData(uuid);
@@ -67,6 +68,7 @@ public class YamlStorage extends StorageManager {
         playerConfig.set("active-contracts", playerData.serializeActiveContracts());
         playerConfig.set("completed-daily", playerData.serializeCompletedDaily());
         playerConfig.set("completed-weekly", playerData.serializeCompletedWeekly());
+        playerConfig.set("purchased-shop-items", playerData.serializePurchasedShopItems()); // <-- MODIFICADO
 
         try {
             playerConfig.save(playerFile);

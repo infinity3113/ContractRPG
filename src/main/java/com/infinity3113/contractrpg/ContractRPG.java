@@ -24,6 +24,10 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.infinity3113.contractrpg.shop.ShopGUI;
+import com.infinity3113.contractrpg.shop.ShopListener;
+import com.infinity3113.contractrpg.shop.ShopManager;
+
 public final class ContractRPG extends JavaPlugin {
 
     private static ContractRPG instance;
@@ -32,6 +36,8 @@ public final class ContractRPG extends JavaPlugin {
     private StorageManager storageManager;
     private GUIManager guiManager;
     private PlaceholderManager placeholderManager;
+    private ShopManager shopManager; // <-- AÑADE ESTA LÍNEA
+    private ShopGUI shopGUI; // <-- AÑADE ESTA LÍNEA
 
     @Override
     public void onEnable() {
@@ -47,6 +53,9 @@ public final class ContractRPG extends JavaPlugin {
 
         this.langManager = new LangManager(this);
         this.langManager.loadLanguages();
+		
+        this.shopManager = new ShopManager(this); // <-- AÑADE ESTA LÍNEA
+        this.shopGUI = new ShopGUI(this); // <-- AÑADE ESTA LÍNEA
 
         this.contractManager = new ContractManager(this);
         this.guiManager = new GUIManager(this);
@@ -63,6 +72,8 @@ public final class ContractRPG extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getServer().getPluginManager().registerEvents(new NPCListener(this), this);
         getServer().getPluginManager().registerEvents(new GUIListener(this), this);
+		
+        getServer().getPluginManager().registerEvents(new ShopListener(this), this); // <-- AÑADE ESTA LÍNEA
 
         if (Bukkit.getPluginManager().getPlugin("MythicMobs") != null) {
             getServer().getPluginManager().registerEvents(new MythicMobListener(this), this);
@@ -202,4 +213,10 @@ public final class ContractRPG extends JavaPlugin {
     public StorageManager getStorageManager() { return storageManager; }
     public GUIManager getGuiManager() { return guiManager; }
     public PlaceholderManager getPlaceholderManager() { return placeholderManager; }
+    public ShopManager getShopManager() {
+        return shopManager;
+    }
+    public ShopGUI getShopGUI() {
+        return shopGUI;
+    }
 }
