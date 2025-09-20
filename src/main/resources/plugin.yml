@@ -28,3 +28,10 @@ permissions:
   contractrpg.command.placeholder:
     description: "Allows viewing the list of available placeholders."
     default: op
+  # ===== PERMISOS DE LA TIENDA CORREGIDOS =====
+  contractrpg.shop.open:
+    description: Allows player to open the shop with /contract shop.
+    default: true
+  contractrpg.admin.shopedit:
+    description: Allows player to edit the shop with /contract shopedit.
+    default: op

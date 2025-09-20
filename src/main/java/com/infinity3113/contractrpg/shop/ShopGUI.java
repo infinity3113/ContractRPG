@@ -26,8 +26,7 @@ public class ShopGUI {
     public ShopGUI(ContractRPG plugin) {
         this.plugin = plugin;
     }
-    
-    // ===== INVENTORY HOLDERS (LA SOLUCIÓN AL BUG) =====
+
     public static class PlayerShopHolder implements InventoryHolder {
         @Override public @NotNull Inventory getInventory() { return null; }
     }
@@ -67,6 +66,24 @@ public class ShopGUI {
                 editor.setItem(entry.getKey(), createEditorDisplayItem(entry.getValue()));
             }
         }
+        
+        // ===== AÑADIDO: ÍTEM DE AYUDA =====
+        ItemStack helpItem = new ItemStack(Material.BOOK);
+        ItemMeta helpMeta = helpItem.getItemMeta();
+        helpMeta.setDisplayName(MessageUtils.parse("<green><bold>¿Cómo usar el editor?</bold></green>"));
+        List<String> helpLore = new ArrayList<>();
+        helpLore.add(" ");
+        helpLore.add(MessageUtils.parse("<gray>» <white>Añadir: <yellow>Arrastra un ítem a un slot vacío."));
+        helpLore.add(MessageUtils.parse("<gray>» <white>Editar: <yellow>Click Izquierdo sobre un ítem."));
+        helpLore.add(MessageUtils.parse("<gray>» <white>Eliminar: <yellow>Click Derecho sobre un ítem."));
+        helpMeta.setLore(helpLore);
+        helpItem.setItemMeta(helpMeta);
+        
+        if (editor.getItem(size - 1) == null) {
+            editor.setItem(size - 1, helpItem);
+        }
+        // ===== FIN DEL ÍTEM DE AYUDA =====
+
         fillBorders(editor, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
         player.openInventory(editor);
     }
@@ -93,10 +110,9 @@ public class ShopGUI {
                 "<white>Click para cambiar (en segundos)."
         )));
 
-        // ===== ¡NUEVO! Botón para editar comandos =====
         List<String> commandLore = new ArrayList<>();
         commandLore.add("<gray>Comandos a ejecutar:");
-        if (shopItem.getCommands().isEmpty()) {
+        if (shopItem.getCommands() == null || shopItem.getCommands().isEmpty()) {
             commandLore.add("<gray><italic>Ninguno</italic>");
         } else {
             shopItem.getCommands().forEach(cmd -> commandLore.add("<#ADD8E6>- " + cmd));
@@ -112,7 +128,7 @@ public class ShopGUI {
         fillBorders(itemEditor, new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
         player.openInventory(itemEditor);
     }
-    
+
     private ItemStack createButton(Material material, String name, List<String> lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
@@ -126,7 +142,13 @@ public class ShopGUI {
 
     private ItemStack createEditorDisplayItem(ShopItem shopItem) {
         ItemStack display = shopItem.getItemStack().clone();
+        
+        // ===== CORREGIDO: Manejo de ItemMeta nulo =====
         ItemMeta meta = display.getItemMeta();
+        if (meta == null) {
+            meta = Bukkit.getItemFactory().getItemMeta(display.getType());
+        }
+        
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(MessageUtils.parse(" "));
         lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
@@ -143,6 +165,10 @@ public class ShopGUI {
     private ItemStack createPlayerDisplayItem(ShopItem shopItem, PlayerData playerData, int slot) {
         ItemStack display = shopItem.getItemStack().clone();
         ItemMeta meta = display.getItemMeta();
+        if (meta == null) {
+            meta = Bukkit.getItemFactory().getItemMeta(display.getType());
+        }
+        
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(MessageUtils.parse(" "));
 
@@ -186,7 +212,7 @@ public class ShopGUI {
             }
         }
     }
-    
+
     public static String formatTime(long seconds) {
         if (seconds <= 0) return "N/A";
         long days = TimeUnit.SECONDS.toDays(seconds);

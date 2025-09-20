@@ -1,3 +1,4 @@
+com\infinity3113\contractrpg\shop\ShopListener$ChatInputSession.class
 com\infinity3113\contractrpg\data\YamlStorage.class
 com\infinity3113\contractrpg\data\SqliteStorage.class
 com\infinity3113\contractrpg\shop\ShopManager.class

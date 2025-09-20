@@ -10,12 +10,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList; // <-- ¡IMPORT AÑADIDO!
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,17 @@ import java.util.UUID;
 public class ShopListener implements Listener {
 
     private final ContractRPG plugin;
-    private final Map<UUID, String> chatInputTasks = new HashMap<>(); // "price", "cooldown", "command"
+    private final Map<UUID, ChatInputSession> chatInputTasks = new HashMap<>();
+
+    private static class ChatInputSession {
+        final String task;
+        final int slot;
+
+        ChatInputSession(String task, int slot) {
+            this.task = task;
+            this.slot = slot;
+        }
+    }
 
     public ShopListener(ContractRPG plugin) {
         this.plugin = plugin;
@@ -41,11 +50,11 @@ public class ShopListener implements Listener {
             handlePlayerShopClick(event);
         }
     }
-    
+
     private void handlePlayerShopClick(InventoryClickEvent event) {
         event.setCancelled(true);
         if (event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) return;
-        
+
         Player player = (Player) event.getWhoClicked();
         int slot = event.getSlot();
 
@@ -67,7 +76,11 @@ public class ShopListener implements Listener {
             MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.no-funds"));
             return;
         }
-        if (!shopItem.isInfiniteStock() && shopItem.getStock() <= 0) return;
+        if (!shopItem.isInfiniteStock() && shopItem.getStock() <= 0) {
+            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.no-stock"));
+            return;
+        }
+
 
         playerData.setContractPoints(playerData.getContractPoints() - (int) shopItem.getPrice());
         if (!shopItem.isInfiniteStock()) {
@@ -76,14 +89,16 @@ public class ShopListener implements Listener {
         playerData.addPurchasedShopItem(String.valueOf(slot));
         plugin.getShopManager().saveItems();
 
-        for (String command : shopItem.getCommands()) {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+        if (shopItem.getCommands() != null) {
+            for (String command : shopItem.getCommands()) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
+            }
         }
         player.getInventory().addItem(shopItem.getItemStack().clone());
 
         MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.success.purchase")
-                .replace("%item%", shopItem.getItemStack().hasItemMeta() ? shopItem.getItemStack().getItemMeta().getDisplayName() : shopItem.getItemStack().getType().name()));
-        
+                .replace("%item%", shopItem.getItemStack().hasItemMeta() && shopItem.getItemStack().getItemMeta().hasDisplayName() ? shopItem.getItemStack().getItemMeta().getDisplayName() : shopItem.getItemStack().getType().name()));
+
         plugin.getShopGUI().openShop(player);
     }
 
@@ -95,14 +110,18 @@ public class ShopListener implements Listener {
         ItemStack cursorItem = event.getCursor();
         ItemStack currentItem = event.getCurrentItem();
 
-        if (cursorItem != null && cursorItem.getType() != Material.AIR && (currentItem == null || currentItem.getType().isAir())) {
-            plugin.getShopManager().setItem(event.getSlot(), new ShopItem(cursorItem.clone(), 0, 1, false, 0, null));
+        if (cursorItem != null && cursorItem.getType() != Material.AIR && (currentItem == null || currentItem.getType() == Material.AIR)) {
+            // ===== CORREGIDO: Inicializar la lista de comandos vacía en lugar de nula =====
+            plugin.getShopManager().setItem(event.getSlot(), new ShopItem(cursorItem.clone(), 0, 1, false, 0, new ArrayList<>()));
             cursorItem.setAmount(0);
             plugin.getShopGUI().openEditor(player);
             return;
         }
 
-        if (currentItem == null || currentItem.getType().isAir() || !currentItem.hasItemMeta()) return;
+        if (currentItem == null || currentItem.getType() == Material.AIR) return;
+        
+        // El item de ayuda no debe ser interactuable
+        if (currentItem.getType() == Material.BOOK && event.getSlot() == event.getInventory().getSize() -1) return;
 
         ShopItem shopItem = plugin.getShopManager().getItem(event.getSlot());
         if (shopItem == null) return;
@@ -119,7 +138,7 @@ public class ShopListener implements Listener {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
         int slot = holder.getSlot();
-        
+
         ShopItem shopItem = plugin.getShopManager().getItem(slot);
         if (shopItem == null) {
             player.closeInventory();
@@ -132,15 +151,15 @@ public class ShopListener implements Listener {
 
         switch (clicked.getType()) {
             case GOLD_INGOT:
-                startChatInput(player, "price");
+                startChatInput(player, "price", slot);
                 break;
             case CLOCK:
-                startChatInput(player, "cooldown");
+                startChatInput(player, "cooldown", slot);
                 break;
             case COMMAND_BLOCK:
-                if(event.getClick() == ClickType.LEFT) {
-                    startChatInput(player, "command");
-                } else if(event.getClick() == ClickType.RIGHT) {
+                if (event.getClick() == ClickType.LEFT) {
+                    startChatInput(player, "command", slot);
+                } else if (event.getClick() == ClickType.RIGHT) {
                     shopItem.setCommands(new ArrayList<>());
                     plugin.getShopManager().setItem(slot, shopItem);
                     plugin.getShopGUI().openItemEditor(player, slot, shopItem);
@@ -162,9 +181,9 @@ public class ShopListener implements Listener {
                 break;
         }
     }
-    
-    private void startChatInput(Player player, String task) {
-        chatInputTasks.put(player.getUniqueId(), task);
+
+    private void startChatInput(Player player, String task, int slot) {
+        chatInputTasks.put(player.getUniqueId(), new ChatInputSession(task, slot));
         player.closeInventory();
         MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.prompt-" + task));
     }
@@ -174,32 +193,27 @@ public class ShopListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
         if (!chatInputTasks.containsKey(uuid)) return;
-        
+
         event.setCancelled(true);
-        String task = chatInputTasks.get(uuid);
+        ChatInputSession session = chatInputTasks.remove(uuid);
         String message = event.getMessage();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            if(!(player.getOpenInventory().getTopInventory().getHolder() instanceof ShopGUI.ItemEditorHolder)){
-                 chatInputTasks.remove(uuid);
-                 return;
-            }
-            int slot = ((ShopGUI.ItemEditorHolder) player.getOpenInventory().getTopInventory().getHolder()).getSlot();
+            int slot = session.slot;
             ShopItem shopItem = plugin.getShopManager().getItem(slot);
             if (shopItem == null) {
-                chatInputTasks.remove(uuid);
+                MessageUtils.sendMessage(player, "<red>Error: El ítem que intentabas editar ya no existe.</red>");
                 return;
             }
 
             if (message.equalsIgnoreCase("cancelar")) {
-                chatInputTasks.remove(uuid);
                 MessageUtils.sendMessage(player, "<red>Edición cancelada.</red>");
                 plugin.getShopGUI().openItemEditor(player, slot, shopItem);
                 return;
             }
-            
+
             try {
-                switch (task) {
+                switch (session.task) {
                     case "price":
                         shopItem.setPrice(Math.max(0, Double.parseDouble(message)));
                         break;
@@ -208,6 +222,9 @@ public class ShopListener implements Listener {
                         break;
                     case "command":
                         List<String> commands = shopItem.getCommands();
+                        if (commands == null) {
+                           commands = new ArrayList<>();
+                        }
                         commands.add(message);
                         shopItem.setCommands(commands);
                         break;
@@ -218,14 +235,7 @@ public class ShopListener implements Listener {
                 MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.error-invalid-number"));
             }
 
-            chatInputTasks.remove(uuid);
             plugin.getShopGUI().openItemEditor(player, slot, shopItem);
         });
-    }
-
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        // No borramos la tarea de chat aquí, para permitir que el jugador escriba en el chat
-        // después de que se cierre el inventario. Se borrará después de que escriba.
     }
 }
