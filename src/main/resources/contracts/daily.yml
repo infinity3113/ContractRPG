@@ -1,6 +1,3 @@
-# ======================================================================
-# ===              ARCHIVO DE MISIONES DIARIAS                       ===
-# ======================================================================
 contracts:
   # --- RANGO DE NIVEL 1-5 ---
   daily_hunt_cows_1:
@@ -13,6 +10,7 @@ contracts:
     rewards: [ "eco give %player% 70" ]
     display-rewards: [ "70 de Dinero" ]
     experience-reward: 15
+    contract-points-reward: 5
     level-requirement: 1
   daily_mine_coal_1:
     display-name: "<#36454F>Diaria: El Carbonero"
@@ -24,6 +22,7 @@ contracts:
     rewards: [ "eco give %player% 80" ]
     display-rewards: [ "80 de Dinero" ]
     experience-reward: 20
+    contract-points-reward: 5
     level-requirement: 1
   daily_farm_potatoes_2:
     display-name: "<#9B7653>Diaria: Cosecha de Patatas"
@@ -35,6 +34,7 @@ contracts:
     rewards: [ "eco give %player% 90" ]
     display-rewards: [ "90 de Dinero" ]
     experience-reward: 20
+    contract-points-reward: 6
     level-requirement: 2
   daily_craft_chest_2:
     display-name: "<#8B4513>Diaria: Almacenamiento Básico"
@@ -46,6 +46,7 @@ contracts:
     rewards: [ "eco give %player% 85" ]
     display-rewards: [ "85 de Dinero" ]
     experience-reward: 20
+    contract-points-reward: 6
     level-requirement: 2
   daily_hunt_zombies_3:
     display-name: "<#2E8B57>Diaria: Limpieza Nocturna"
@@ -57,6 +58,7 @@ contracts:
     rewards: [ "eco give %player% 110" ]
     display-rewards: [ "110 de Dinero" ]
     experience-reward: 25
+    contract-points-reward: 8
     level-requirement: 3
   daily_fish_salmon_3:
     display-name: "<#FA8072>Diaria: Pescador de Salmón"
@@ -68,6 +70,7 @@ contracts:
     rewards: [ "eco give %player% 110" ]
     display-rewards: [ "110 de Dinero" ]
     experience-reward: 25
+    contract-points-reward: 8
     level-requirement: 3
   daily_deliver_cobblestone_4:
     display-name: "<#808080>Diaria: Suministros de Piedra"
@@ -79,6 +82,7 @@ contracts:
     rewards: [ "eco give %player% 100" ]
     display-rewards: [ "100 de Dinero" ]
     experience-reward: 25
+    contract-points-reward: 7
     level-requirement: 4
   daily_mine_birch_4:
     display-name: "<#F5F5DC>Diaria: Madera Clara"
@@ -90,6 +94,7 @@ contracts:
     rewards: [ "eco give %player% 95" ]
     display-rewards: [ "95 de Dinero" ]
     experience-reward: 20
+    contract-points-reward: 7
     level-requirement: 4
   daily_hunt_creepers_5:
     display-name: "<#00FF00>Diaria: ¡Cuidado!"
@@ -101,6 +106,7 @@ contracts:
     rewards: [ "eco give %player% 150" ]
     display-rewards: [ "150 de Dinero" ]
     experience-reward: 40
+    contract-points-reward: 12
     level-requirement: 5
   daily_mine_iron_5:
     display-name: "<#A52A2A>Diaria: Veta de Hierro"
@@ -112,6 +118,7 @@ contracts:
     rewards: [ "eco give %player% 160" ]
     display-rewards: [ "160 de Dinero" ]
     experience-reward: 40
+    contract-points-reward: 12
     level-requirement: 5
   # --- RANGO DE NIVEL 6-10 ---
   daily_craft_furnace_6:
@@ -124,6 +131,7 @@ contracts:
     rewards: [ "eco give %player% 130" ]
     display-rewards: [ "130 de Dinero" ]
     experience-reward: 30
+    contract-points-reward: 10
     level-requirement: 6
   daily_hunt_spiders_6:
     display-name: "<#483D8B>Diaria: Desinsectación"
@@ -135,6 +143,7 @@ contracts:
     rewards: [ "eco give %player% 140" ]
     display-rewards: [ "140 de Dinero" ]
     experience-reward: 35
+    contract-points-reward: 10
     level-requirement: 6
   daily_fish_tropical_7:
     display-name: "<#FF4500>Diaria: Pesca Exótica"
@@ -146,6 +155,7 @@ contracts:
     rewards: [ "eco give %player% 180" ]
     display-rewards: [ "180 de Dinero" ]
     experience-reward: 45
+    contract-points-reward: 15
     level-requirement: 7
   daily_mine_gold_7:
     display-name: "<#FFD700>Diaria: Fiebre del Oro"
@@ -157,6 +167,7 @@ contracts:
     rewards: [ "eco give %player% 200" ]
     display-rewards: [ "200 de Dinero" ]
     experience-reward: 50
+    contract-points-reward: 15
     level-requirement: 7
   daily_hunt_enderman_8:
     display-name: "<#4B0082>Diaria: Mirada Furtiva"
@@ -168,6 +179,7 @@ contracts:
     rewards: [ "eco give %player% 220" ]
     display-rewards: [ "220 de Dinero" ]
     experience-reward: 55
+    contract-points-reward: 18
     level-requirement: 8
   daily_deliver_wool_8:
     display-name: "<#D3D3D3>Diaria: El Pastor"
@@ -179,6 +191,7 @@ contracts:
     rewards: [ "eco give %player% 150" ]
     display-rewards: [ "150 de Dinero" ]
     experience-reward: 35
+    contract-points-reward: 12
     level-requirement: 8
   daily_craft_iron_block_9:
     display-name: "<#B0C4DE>Diaria: Compactación"
@@ -190,6 +203,7 @@ contracts:
     rewards: [ "eco give %player% 250" ]
     display-rewards: [ "250 de Dinero" ]
     experience-reward: 60
+    contract-points-reward: 20
     level-requirement: 9
   daily_mine_lapis_9:
     display-name: "<#00008B>Diaria: Gema Azul"
@@ -201,6 +215,7 @@ contracts:
     rewards: [ "eco give %player% 240" ]
     display-rewards: [ "240 de Dinero" ]
     experience-reward: 55
+    contract-points-reward: 18
     level-requirement: 9
   daily_hunt_mythic_goblin_10:
     display-name: "<#228B22>Diaria: Plaga Goblin"
@@ -212,6 +227,7 @@ contracts:
     rewards: [ "eco give %player% 300" ]
     display-rewards: [ "300 de Dinero" ]
     experience-reward: 70
+    contract-points-reward: 25
     level-requirement: 10
   daily_fish_pufferfish_10:
     display-name: "<#FFFF00>Diaria: Pesca Peligrosa"
@@ -223,6 +239,7 @@ contracts:
     rewards: [ "eco give %player% 280" ]
     display-rewards: [ "280 de Dinero" ]
     experience-reward: 65
+    contract-points-reward: 22
     level-requirement: 10
   # --- RANGO DE NIVEL 11-15 ---
   daily_mine_redstone_11:
@@ -235,6 +252,7 @@ contracts:
     rewards: [ "eco give %player% 260" ]
     display-rewards: [ "260 de Dinero" ]
     experience-reward: 60
+    contract-points-reward: 20
     level-requirement: 11
   daily_hunt_zombie_pigman_11:
     display-name: "<#FFC0CB>Diaria: Incursión al Nether"
@@ -246,6 +264,7 @@ contracts:
     rewards: [ "eco give %player% 320" ]
     display-rewards: [ "320 de Dinero" ]
     experience-reward: 75
+    contract-points-reward: 25
     level-requirement: 11
   daily_craft_bookshelf_12:
     display-name: "<#DEB887>Diaria: El Bibliotecario"
@@ -257,6 +276,7 @@ contracts:
     rewards: [ "eco give %player% 300" ]
     display-rewards: [ "300 de Dinero" ]
     experience-reward: 70
+    contract-points-reward: 25
     level-requirement: 12
   daily_deliver_mmo_silver_12:
     display-name: "<#C0C0C0>Diaria: Entrega de Plata"
@@ -268,6 +288,7 @@ contracts:
     rewards: [ "eco give %player% 350" ]
     display-rewards: [ "350 de Dinero" ]
     experience-reward: 80
+    contract-points-reward: 30
     level-requirement: 12
   daily_hunt_blaze_13:
     display-name: "<#FF4500>Diaria: Infierno"
@@ -279,6 +300,7 @@ contracts:
     rewards: [ "eco give %player% 400" ]
     display-rewards: [ "400 de Dinero" ]
     experience-reward: 90
+    contract-points-reward: 35
     level-requirement: 13
   daily_mine_diamond_13:
     display-name: "<#00FFFF>Diaria: Buscador de Tesoros"
@@ -290,6 +312,7 @@ contracts:
     rewards: [ "eco give %player% 500" ]
     display-rewards: [ "500 de Dinero" ]
     experience-reward: 120
+    contract-points-reward: 40
     level-requirement: 13
   daily_fish_nautilus_14:
     display-name: "<#FFE4B5>Diaria: Tesoro Marino"
@@ -301,6 +324,7 @@ contracts:
     rewards: [ "eco give %player% 450" ]
     display-rewards: [ "450 de Dinero" ]
     experience-reward: 100
+    contract-points-reward: 38
     level-requirement: 14
   daily_craft_tnt_14:
     display-name: "<#8B0000>Diaria: Experto en Explosivos"
@@ -312,6 +336,7 @@ contracts:
     rewards: [ "eco give %player% 380" ]
     display-rewards: [ "380 de Dinero" ]
     experience-reward: 85
+    contract-points-reward: 30
     level-requirement: 14
   daily_hunt_witch_15:
     display-name: "<#9932CC>Diaria: Cazador de Brujas"
@@ -323,6 +348,7 @@ contracts:
     rewards: [ "eco give %player% 480" ]
     display-rewards: [ "480 de Dinero" ]
     experience-reward: 110
+    contract-points-reward: 40
     level-requirement: 15
   daily_deliver_obsidian_15:
     display-name: "<#191970>Diaria: Roca Negra"
@@ -334,6 +360,7 @@ contracts:
     rewards: [ "eco give %player% 550" ]
     display-rewards: [ "550 de Dinero" ]
     experience-reward: 130
+    contract-points-reward: 45
     level-requirement: 15
   # --- RANGO DE NIVEL 16-20 ---
   daily_mine_emerald_16:
@@ -346,6 +373,7 @@ contracts:
     rewards: [ "eco give %player% 600" ]
     display-rewards: [ "600 de Dinero" ]
     experience-reward: 140
+    contract-points-reward: 50
     level-requirement: 16
   daily_hunt_mythic_orc_16:
     display-name: "<#006400>Diaria: Amenaza Orca"
@@ -357,6 +385,7 @@ contracts:
     rewards: [ "eco give %player% 580" ]
     display-rewards: [ "580 de Dinero" ]
     experience-reward: 135
+    contract-points-reward: 48
     level-requirement: 16
   daily_craft_ender_chest_17:
     display-name: "<#483D8B>Diaria: Almacenamiento Dimensional"
@@ -368,6 +397,7 @@ contracts:
     rewards: [ "eco give %player% 650" ]
     display-rewards: [ "650 de Dinero" ]
     experience-reward: 150
+    contract-points-reward: 55
     level-requirement: 17
   daily_fish_treasure_17:
     display-name: "<#FFD700>Diaria: Pescador de Tesoros"
@@ -379,6 +409,7 @@ contracts:
     rewards: [ "eco give %player% 700" ]
     display-rewards: [ "700 de Dinero" ]
     experience-reward: 160
+    contract-points-reward: 60
     level-requirement: 17
   daily_hunt_shulker_18:
     display-name: "<#8A2BE2>Diaria: Proyectiles Misteriosos"
@@ -390,6 +421,7 @@ contracts:
     rewards: [ "eco give %player% 750" ]
     display-rewards: [ "750 de Dinero" ]
     experience-reward: 170
+    contract-points-reward: 65
     level-requirement: 18
   daily_mine_ancient_debris_18:
     display-name: "<#654321>Diaria: Minero del Nether"
@@ -401,6 +433,7 @@ contracts:
     rewards: [ "eco give %player% 800" ]
     display-rewards: [ "800 de Dinero" ]
     experience-reward: 200
+    contract-points-reward: 75
     level-requirement: 18
   daily_craft_beacon_19:
     display-name: "<#00BFFF>Diaria: El Faro"
@@ -412,6 +445,7 @@ contracts:
     rewards: [ "eco give %player% 1000" ]
     display-rewards: [ "1000 de Dinero" ]
     experience-reward: 250
+    contract-points-reward: 100
     level-requirement: 19
   daily_deliver_mmo_mithril_19:
     display-name: "<#778899>Diaria: Mithril Preciado"
@@ -423,6 +457,7 @@ contracts:
     rewards: [ "eco give %player% 850" ]
     display-rewards: [ "850 de Dinero" ]
     experience-reward: 190
+    contract-points-reward: 70
     level-requirement: 19
   daily_hunt_wither_skeleton_20:
     display-name: "<#2F4F4F>Diaria: Calaveras Negras"
@@ -434,6 +469,7 @@ contracts:
     rewards: [ "eco give %player% 1200" ]
     display-rewards: [ "1200 de Dinero" ]
     experience-reward: 300
+    contract-points-reward: 120
     level-requirement: 20
   daily_hunt_mythic_yeti_20:
     display-name: "<#F0FFFF>Diaria: Bestia de las Nieves"
@@ -445,6 +481,7 @@ contracts:
     rewards: [ "eco give %player% 1100" ]
     display-rewards: [ "1100 de Dinero" ]
     experience-reward: 280
+    contract-points-reward: 110
     level-requirement: 20
   # --- MISIONES ADICIONALES PARA LLEGAR A 50 ---
   daily_hunt_pigs_1:
@@ -457,6 +494,7 @@ contracts:
     rewards: ["eco give %player% 75"]
     display-rewards: ["75 de Dinero"]
     experience-reward: 15
+    contract-points-reward: 5
     level-requirement: 1
   daily_craft_sticks_2:
     display-name: "<#A0522D>Diaria: Palitos y más palitos"
@@ -468,6 +506,7 @@ contracts:
     rewards: ["eco give %player% 60"]
     display-rewards: ["60 de Dinero"]
     experience-reward: 10
+    contract-points-reward: 3
     level-requirement: 2
   daily_deliver_sand_5:
     display-name: "<#F4A460>Diaria: Arena para el Vidriero"
@@ -479,6 +518,7 @@ contracts:
     rewards: ["eco give %player% 130"]
     display-rewards: ["130 de Dinero"]
     experience-reward: 30
+    contract-points-reward: 10
     level-requirement: 5
   daily_mine_deepslate_8:
     display-name: "<#696969>Diaria: Minero de Profundidades"
@@ -490,6 +530,7 @@ contracts:
     rewards: ["eco give %player% 200"]
     display-rewards: ["200 de Dinero"]
     experience-reward: 45
+    contract-points-reward: 15
     level-requirement: 8
   daily_hunt_ghasts_14:
     display-name: "<#F8F8FF>Diaria: Cazador de Fantasmas"
@@ -501,6 +542,7 @@ contracts:
     rewards: ["eco give %player% 500"]
     display-rewards: ["500 de Dinero"]
     experience-reward: 120
+    contract-points-reward: 45
     level-requirement: 14
   daily_craft_gold_block_16:
     display-name: "<#FFDF00>Diaria: Lingotes Dorados"
@@ -512,6 +554,7 @@ contracts:
     rewards: ["eco give %player% 550"]
     display-rewards: ["550 de Dinero"]
     experience-reward: 130
+    contract-points-reward: 50
     level-requirement: 16
   daily_deliver_mmo_elven_wood_18:
     display-name: "<#90EE90>Diaria: Madera Élfica"
@@ -523,6 +566,7 @@ contracts:
     rewards: ["eco give %player% 780"]
     display-rewards: ["780 de Dinero"]
     experience-reward: 180
+    contract-points-reward: 68
     level-requirement: 18
   daily_hunt_mythic_elemental_20:
     display-name: "<#ADD8E6>Diaria: Furia Elemental"
@@ -534,4 +578,6 @@ contracts:
     rewards: ["eco give %player% 1150"]
     display-rewards: ["1150 de Dinero"]
     experience-reward: 290
+    contract-points-reward: 115
     level-requirement: 20
+}

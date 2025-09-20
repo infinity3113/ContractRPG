@@ -14,9 +14,10 @@ public class Contract {
     private final List<String> rewards;
     private final List<String> displayRewards;
     private final int experienceReward;
+    private final int contractPointsReward; // <-- AÑADIDO
     private final int levelRequirement;
 
-    public Contract(String id, String displayName, List<String> description, ContractType contractType, MissionType missionType, String missionObjective, int missionRequirement, List<String> rewards, List<String> displayRewards, int experienceReward, int levelRequirement) {
+    public Contract(String id, String displayName, List<String> description, ContractType contractType, MissionType missionType, String missionObjective, int missionRequirement, List<String> rewards, List<String> displayRewards, int experienceReward, int contractPointsReward, int levelRequirement) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -27,6 +28,7 @@ public class Contract {
         this.rewards = rewards;
         this.displayRewards = displayRewards;
         this.experienceReward = experienceReward;
+        this.contractPointsReward = contractPointsReward; // <-- AÑADIDO
         this.levelRequirement = levelRequirement;
     }
 
@@ -41,4 +43,5 @@ public class Contract {
     public List<String> getDisplayRewards() { return displayRewards; }
     public int getLevelRequirement() { return levelRequirement; }
     public int getExperienceReward() { return experienceReward; }
+    public int getContractPointsReward() { return contractPointsReward; } // <-- AÑADIDO
 }

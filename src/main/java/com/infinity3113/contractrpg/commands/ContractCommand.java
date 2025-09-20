@@ -55,29 +55,24 @@ public class ContractCommand implements CommandExecutor {
                 return true;
             }
 
-            // ===== BLOQUE DE CÓDIGO AÑADIDO Y CORREGIDO =====
             if (args[0].equalsIgnoreCase("placeholder") || args[0].equalsIgnoreCase("placeholders")) {
                 if (!player.hasPermission("contractrpg.command.placeholder")) {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                // Verificamos que PlaceholderAPI esté activo para evitar errores
                 if (plugin.getPlaceholderManager() == null) {
                     player.sendMessage(MessageUtils.parse("&cPlaceholderAPI is not enabled on the server."));
                     return true;
                 }
                 List<String> placeholders = plugin.getPlaceholderManager().getPlaceholders();
-                // Usamos el método de envío de mensajes que ya tienes para el encabezado
                 MessageUtils.sendMessage(player, langManager.getMessage("placeholder-list-header"));
                 for (String placeholder : placeholders) {
                     String formattedPlaceholder = langManager.getMessage("placeholder-list-format")
                             .replace("%placeholder%", placeholder);
-                    // Enviamos cada línea sin el prefijo, usando tu MessageUtils para los colores
                     player.sendMessage(MessageUtils.parse(formattedPlaceholder));
                 }
                 return true;
             }
-            // ===== FIN DEL BLOQUE AÑADIDO =====
             
             if (args[0].equalsIgnoreCase("stats")) {
                 PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
@@ -89,6 +84,7 @@ public class ContractCommand implements CommandExecutor {
                             .replace("%level%", String.valueOf(playerData.getLevel()))
                             .replace("%current_exp%", String.valueOf(playerData.getExperience()))
                             .replace("%required_exp%", String.valueOf(playerData.getRequiredExperience()))
+                            .replace("%contract_points%", String.valueOf(playerData.getContractPoints())) // <-- AÑADIDO
                     ));
                 }
                 return true;

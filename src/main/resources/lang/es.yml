@@ -18,6 +18,7 @@ stats_message:
   - "<#FFD700>                           Estadísticas de Contratos"
   - ""
   - "    <gray>Nivel: <green>%level%"
+  - "    <gray>Puntos de Contrato: <#AA00AA>%contract_points%" # <-- LÍNEA MODIFICADA/AÑADIDA
   - "    <gray>Experiencia: <yellow>%current_exp%<gray> / <gray>%required_exp%"
   - ""
   - "<strikethrough>                                                                        </strikethrough>"
@@ -53,6 +54,7 @@ gui.main.active.lore:
 gui.main.stats.name: "<#A1FFFB>Tu Progreso"
 gui.main.stats.lore:
   - "<gray>Nivel: <green>%level%"
+  - "<gray>Puntos de Contrato: <#AA00AA>%contract_points%" # <-- LÍNEA AÑADIDA
   - ""
   - "%exp_bar%"
   - "<yellow>%current_exp%<gray> / <yellow>%required_exp% EXP"

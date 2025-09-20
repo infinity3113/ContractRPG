@@ -4,110 +4,116 @@ import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.contracts.Contract;
 import com.infinity3113.contractrpg.contracts.ContractType;
 import com.infinity3113.contractrpg.data.PlayerData;
-import com.infinity3113.contractrpg.managers.GUIManager;
 import com.infinity3113.contractrpg.util.MessageUtils;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 public class GUIListener implements Listener {
 
     private final ContractRPG plugin;
-    private final GUIManager guiManager;
+    private final NamespacedKey contractIdKey;
 
     public GUIListener(ContractRPG plugin) {
         this.plugin = plugin;
-        this.guiManager = plugin.getGuiManager();
+        this.contractIdKey = new NamespacedKey(plugin, "contract-id");
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        // Verificar si el inventario es parte del plugin
-        if (event.getView().getTitle() == null || event.getCurrentItem() == null) {
-            return;
+        String title = event.getView().getTitle();
+
+        // ===== LÓGICA DE CLIC CORREGIDA =====
+        // Verificamos si el título del inventario corresponde a ALGUNO de los submenús de contratos.
+        // Esto restaura la funcionalidad y evita que el listener se active en el menú principal.
+        String dailyTitle = MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.daily"));
+        String weeklyTitle = MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.weekly"));
+        String specialTitle = MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.special"));
+
+        if (!title.equals(dailyTitle) && !title.equals(weeklyTitle) && !title.equals(specialTitle)) {
+            return; // Si no es un submenú de contratos, no hacemos nada.
         }
 
-        // Prevenir que los jugadores tomen ítems
-        if (isContractGui(event.getView().getTitle())) {
-            event.setCancelled(true);
-        } else {
-            return; // No es una GUI de este plugin, no hacer nada más
+        event.setCancelled(true);
+
+        if (event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+            return;
         }
 
         Player player = (Player) event.getWhoClicked();
         ItemStack clickedItem = event.getCurrentItem();
-        ItemMeta meta = clickedItem.getItemMeta();
 
-        if (meta == null) return;
+        if (!clickedItem.hasItemMeta()) return;
 
-        // --- MANEJO DE ACCIONES DE NAVEGACIÓN ---
-        if (meta.getPersistentDataContainer().has(guiManager.guiActionKey, PersistentDataType.STRING)) {
-            String action = meta.getPersistentDataContainer().get(guiManager.guiActionKey, PersistentDataType.STRING);
-            switch (action) {
-                case "open_daily":
-                    guiManager.openContractList(player, ContractType.DAILY);
-                    return;
-                case "open_weekly":
-                    guiManager.openContractList(player, ContractType.WEEKLY);
-                    return;
-                case "open_special":
-                    guiManager.openContractList(player, ContractType.SPECIAL);
-                    return;
-                case "open_active":
-                    guiManager.openActiveContracts(player);
-                    return;
-                case "back_to_main":
-                    guiManager.openMainMenu(player);
-                    return;
-            }
-        }
-
-        // --- MANEJO DE ACEPTACIÓN DE CONTRATOS ---
-        if (meta.getPersistentDataContainer().has(guiManager.contractIdKey, PersistentDataType.STRING)) {
-            acceptContract(player, meta);
-        }
-    }
-
-    private void acceptContract(Player player, ItemMeta meta) {
-        String contractId = meta.getPersistentDataContainer().get(guiManager.contractIdKey, PersistentDataType.STRING);
-        
-        PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
-        Contract contract = plugin.getContractManager().getContract(contractId);
-
-        if (playerData == null || contract == null) return;
-
-        if (playerData.getActiveContracts().containsKey(contractId)) return;
-
-        // Lógica de verificación de límites
-        ContractType type = contract.getContractType();
-        String configPath = type.name().toLowerCase() + "-missions.selectable-amount";
-        int maxContracts = plugin.getConfig().getInt(configPath, 1);
-
-        long currentContracts = playerData.getActiveContracts().keySet().stream()
-            .map(id -> plugin.getContractManager().getContract(id))
-            .filter(c -> c != null && c.getContractType() == type)
-            .count();
-
-        if (currentContracts >= maxContracts) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract_limit_reached"));
+        PersistentDataContainer container = clickedItem.getItemMeta().getPersistentDataContainer();
+        // Si el ítem no tiene un ID de contrato (como el botón de "atrás"), no hacemos nada.
+        if (!container.has(contractIdKey, PersistentDataType.STRING)) {
             return;
         }
 
-        playerData.addContract(contractId);
-        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract_accepted"));
-        player.closeInventory();
-    }
+        String contractId = container.get(contractIdKey, PersistentDataType.STRING);
+        Contract contract = plugin.getContractManager().getContract(contractId);
+        if (contract == null) {
+            return;
+        }
 
-    private boolean isContractGui(String title) {
-        // Comprueba si el título coincide con cualquiera de las GUIs del plugin
-        return title.equals(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.title"))) ||
-               title.equals(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.daily"))) ||
-               title.equals(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.weekly"))) ||
-               title.equals(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.special"))) ||
-               title.equals(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.active")));
+        PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+        if (playerData == null) return;
+
+        // Si el jugador ya tiene el contrato, no hacer nada.
+        if(playerData.getActiveContracts().containsKey(contractId)){
+            return;
+        }
+
+        // Se restaura el mensaje correcto para el requisito de nivel.
+        if(playerData.getLevel() < contract.getLevelRequirement()){
+             // En tu es.yml original no tenías este mensaje, puedes añadirlo:
+             // not-enough-level: "%prefix%<red>Tu nivel es demasiado bajo. Requieres nivel %level%."
+             MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("not-enough-level")
+                .replace("%level%", String.valueOf(contract.getLevelRequirement())));
+            player.closeInventory();
+            return;
+        }
+
+        int currentAccepted = 0;
+        int maxSelectable = 1;
+        String limitMessage = "";
+        ContractType type = contract.getContractType();
+        
+        // Esta lógica ahora funcionará correctamente porque el listener solo se activa en los menús correctos.
+        if (type == ContractType.DAILY) {
+            maxSelectable = plugin.getConfig().getInt("daily-missions.selectable-amount", 1);
+            limitMessage = plugin.getLangManager().getMessage("contract_limit_reached");
+        } else if (type == ContractType.WEEKLY) {
+            maxSelectable = plugin.getConfig().getInt("weekly-missions.selectable-amount", 1);
+            limitMessage = plugin.getLangManager().getMessage("contract_limit_reached");
+        } else if (type == ContractType.SPECIAL) {
+            maxSelectable = plugin.getConfig().getInt("special-missions.selectable-amount", 1);
+            limitMessage = plugin.getLangManager().getMessage("contract_limit_reached");
+        }
+
+        for (String activeId : playerData.getActiveContracts().keySet()) {
+            Contract activeContract = plugin.getContractManager().getContract(activeId);
+            if (activeContract != null && activeContract.getContractType() == type) {
+                currentAccepted++;
+            }
+        }
+        
+        if (currentAccepted >= maxSelectable) {
+            MessageUtils.sendMessage(player, limitMessage);
+            return;
+        }
+
+        playerData.setContractProgress(contractId, 0); 
+        
+        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("contract_accepted")
+            .replace("%mission%", contract.getDisplayName()));
+
+        player.closeInventory();
     }
 }

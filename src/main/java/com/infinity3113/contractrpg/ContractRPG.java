@@ -31,7 +31,7 @@ public final class ContractRPG extends JavaPlugin {
     private LangManager langManager;
     private StorageManager storageManager;
     private GUIManager guiManager;
-    private PlaceholderManager placeholderManager; // <-- 1. CAMPO AÑADIDO
+    private PlaceholderManager placeholderManager;
 
     @Override
     public void onEnable() {
@@ -70,7 +70,7 @@ public final class ContractRPG extends JavaPlugin {
         }
         
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-            this.placeholderManager = new PlaceholderManager(this); // <-- 2. ASIGNACIÓN AÑADIDA
+            this.placeholderManager = new PlaceholderManager(this);
             this.placeholderManager.register();
             getLogger().info("Successfully hooked into PlaceholderAPI.");
         }
@@ -92,11 +92,17 @@ public final class ContractRPG extends JavaPlugin {
         PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (playerData == null) return;
 
+        // Otorgar recompensas
         playerData.addExperience(contract.getExperienceReward());
+        playerData.addContractPoints(contract.getContractPointsReward()); // <-- AÑADIDO
 
+        // Construir mensaje de recompensas
         String rewardsString = String.join("<gray>, <white>", contract.getDisplayRewards());
-        if(contract.getExperienceReward() > 0) {
+        if (contract.getExperienceReward() > 0) {
             rewardsString += "<gray>, <white>" + contract.getExperienceReward() + " EXP";
+        }
+        if (contract.getContractPointsReward() > 0) { // <-- AÑADIDO
+            rewardsString += "<gray>, <white>" + contract.getContractPointsReward() + " Puntos de Contrato";
         }
         
         String completionMessage = getLangManager().getMessage("contract_completed")
@@ -195,5 +201,5 @@ public final class ContractRPG extends JavaPlugin {
     public LangManager getLangManager() { return langManager; }
     public StorageManager getStorageManager() { return storageManager; }
     public GUIManager getGuiManager() { return guiManager; }
-    public PlaceholderManager getPlaceholderManager() { return placeholderManager; } // <-- 3. GETTER AÑADIDO
+    public PlaceholderManager getPlaceholderManager() { return placeholderManager; }
 }
