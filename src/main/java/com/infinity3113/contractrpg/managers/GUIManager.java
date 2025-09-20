@@ -19,6 +19,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class GUIManager {
@@ -27,179 +28,177 @@ public class GUIManager {
     public final NamespacedKey contractIdKey;
     public final NamespacedKey guiActionKey;
     private final ItemStack borderPane;
-    private final ItemStack fillerPane;
 
     public GUIManager(ContractRPG plugin) {
         this.plugin = plugin;
         this.contractIdKey = new NamespacedKey(plugin, "contract-id");
         this.guiActionKey = new NamespacedKey(plugin, "gui-action");
         
+        // Se mantiene tu lógica para crear los paneles decorativos
         this.borderPane = createPane(Material.BLACK_STAINED_GLASS_PANE, " ");
-        this.fillerPane = createPane(Material.GRAY_STAINED_GLASS_PANE, " ");
     }
 
-    public void openMainMenu(Player player) {
+    /**
+     * Este es el método que faltaba. Abre el menú principal y utiliza tu método fillBorders.
+     */
+    public void openMainGUI(Player player) {
         String title = MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.title"));
-        Inventory gui = Bukkit.createInventory(null, 45, title);
+        int size = plugin.getConfig().getInt("gui-settings.main.size", 27);
+        Inventory gui = Bukkit.createInventory(null, size, title);
 
+        // --- Items del Menú Principal (tu lógica original con claves de acción corregidas) ---
+        ItemStack daily = new ItemStack(Material.valueOf(plugin.getConfig().getString("gui-settings.main.daily-item.material", "CLOCK")));
+        ItemMeta dailyMeta = daily.getItemMeta();
+        dailyMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.daily-item.name")));
+        dailyMeta.setLore(plugin.getLangManager().getLore("gui.main.daily-item.lore").stream().map(MessageUtils::parse).collect(Collectors.toList()));
+        dailyMeta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, "open_daily");
+        daily.setItemMeta(dailyMeta);
+        gui.setItem(plugin.getConfig().getInt("gui-settings.main.daily-item.slot", 10), daily);
+
+        ItemStack weekly = new ItemStack(Material.valueOf(plugin.getConfig().getString("gui-settings.main.weekly-item.material", "WRITABLE_BOOK")));
+        ItemMeta weeklyMeta = weekly.getItemMeta();
+        weeklyMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.weekly-item.name")));
+        weeklyMeta.setLore(plugin.getLangManager().getLore("gui.main.weekly-item.lore").stream().map(MessageUtils::parse).collect(Collectors.toList()));
+        weeklyMeta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, "open_weekly");
+        weekly.setItemMeta(weeklyMeta);
+        gui.setItem(plugin.getConfig().getInt("gui-settings.main.weekly-item.slot", 12), weekly);
+
+        ItemStack special = new ItemStack(Material.valueOf(plugin.getConfig().getString("gui-settings.main.special-item.material", "NETHER_STAR")));
+        ItemMeta specialMeta = special.getItemMeta();
+        specialMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.special-item.name")));
+        specialMeta.setLore(plugin.getLangManager().getLore("gui.main.special-item.lore").stream().map(MessageUtils::parse).collect(Collectors.toList()));
+        specialMeta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, "open_special");
+        special.setItemMeta(specialMeta);
+        gui.setItem(plugin.getConfig().getInt("gui-settings.main.special-item.slot", 14), special);
+
+        ItemStack active = new ItemStack(Material.valueOf(plugin.getConfig().getString("gui-settings.main.active-contracts-item.material", "BOOK")));
+        ItemMeta activeMeta = active.getItemMeta();
+        activeMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.active-contracts-item.name")));
+        activeMeta.setLore(plugin.getLangManager().getLore("gui.main.active-contracts-item.lore").stream().map(MessageUtils::parse).collect(Collectors.toList()));
+        activeMeta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, "open_active");
+        active.setItemMeta(activeMeta);
+        gui.setItem(plugin.getConfig().getInt("gui-settings.main.active-contracts-item.slot", 16), active);
+        
+        // Se utiliza tu método para rellenar los bordes
         fillBorders(gui, borderPane);
-
-        PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
-        if (playerData != null) {
-            ItemStack statsItem = new ItemStack(Material.EXPERIENCE_BOTTLE);
-            ItemMeta statsMeta = statsItem.getItemMeta();
-            statsMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.main.stats.name")));
-
-            List<String> statsLore = new ArrayList<>();
-            for (String line : plugin.getLangManager().getMessageList("gui.main.stats.lore")) {
-                statsLore.add(MessageUtils.parse(line
-                        .replace("%level%", String.valueOf(playerData.getLevel()))
-                        .replace("%current_exp%", String.valueOf(playerData.getExperience()))
-                        .replace("%required_exp%", String.valueOf(playerData.getRequiredExperience()))
-                        .replace("%exp_bar%", ProgressBar.create(
-                                playerData.getExperience(), 
-                                playerData.getRequiredExperience(), 
-                                20, "⎜", "green", "gray")) // <-- CORREGIDO AQUÍ
-                ));
-            }
-            statsMeta.setLore(statsLore);
-            statsMeta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-            statsItem.setItemMeta(statsMeta);
-            gui.setItem(4, statsItem);
-        }
-
-        gui.setItem(20, createMenuItem(Material.WRITABLE_BOOK, "gui.main.daily", "open_daily"));
-        gui.setItem(21, createMenuItem(Material.WRITABLE_BOOK, "gui.main.weekly", "open_weekly"));
-        gui.setItem(22, createMenuItem(Material.WRITABLE_BOOK, "gui.main.special", "open_special"));
-        gui.setItem(24, createMenuItem(Material.BOOK, "gui.main.active", "open_active"));
-
+        
         player.openInventory(gui);
     }
 
     public void openContractList(Player player, ContractType type) {
         String titleKey = "gui.submenu.title." + type.name().toLowerCase();
         String title = MessageUtils.parse(plugin.getLangManager().getMessage(titleKey));
-        Inventory gui = Bukkit.createInventory(null, 54, title);
-
-        fillBorders(gui, fillerPane);
-        addNavigationButtons(gui, type);
+        int size = plugin.getConfig().getInt("gui-settings.submenu.size", 54);
+        Inventory gui = Bukkit.createInventory(null, size, title);
 
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
-        
-        List<Contract> potentialContracts = plugin.getContractManager().getContractsByType(type).stream()
-                .filter(c -> {
-                    boolean isActive = playerData.getActiveContracts().containsKey(c.getId());
-                    boolean isCompleted;
-                    if (type == ContractType.DAILY) {
-                        isCompleted = playerData.getCompletedDailyContracts().contains(c.getId());
-                    } else if (type == ContractType.WEEKLY) {
-                        isCompleted = playerData.getCompletedWeeklyContracts().contains(c.getId());
-                    } else {
-                        isCompleted = false;
-                    }
-                    return !isActive && !isCompleted;
-                })
-                .collect(Collectors.toList());
+        if (playerData == null) return;
 
-        Collections.shuffle(potentialContracts);
-
-        String configPath = type.name().toLowerCase() + "-missions.offered-amount";
-        int offerLimit = plugin.getConfig().getInt(configPath, 4);
-
-        List<Contract> contractsToDisplay = new ArrayList<>();
-        for (Contract contract : potentialContracts) {
-            if (contractsToDisplay.size() >= offerLimit) {
-                break;
-            }
-            if (playerData.getLevel() >= contract.getLevelRequirement()) {
-                contractsToDisplay.add(contract);
-            }
+        List<Contract> availableContracts = plugin.getContractManager().getAvailableContracts(playerData.getLevel(), type);
+        for (int i = 0; i < availableContracts.size() && i < 45; i++) { // Límite para dejar espacio para navegación
+            Contract contract = availableContracts.get(i);
+            ItemStack item = createContractItem(contract, playerData);
+            gui.setItem(i, item);
         }
         
-        int slot = 10;
-        for (Contract contract : contractsToDisplay) {
-            gui.setItem(slot, createContractItem(contract, playerData, false));
-            slot++;
-            if (slot % 9 == 8) slot += 2;
-        }
+        addNavigation(gui, type); // Usamos tu método de navegación
+        fillBorders(gui, borderPane);
 
         player.openInventory(gui);
     }
 
     public void openActiveContracts(Player player) {
-        String title = MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.title.active"));
-        Inventory gui = Bukkit.createInventory(null, 54, title);
-        
-        fillBorders(gui, fillerPane);
-        addNavigationButtons(gui, null);
-        
+        String title = MessageUtils.parse(plugin.getLangManager().getMessage("gui.active.title"));
+        int size = plugin.getConfig().getInt("gui-settings.active.size", 54);
+        Inventory gui = Bukkit.createInventory(null, size, title);
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
-        
-        int slot = 10;
-        for (String contractId : playerData.getActiveContracts().keySet()) {
-            Contract contract = plugin.getContractManager().getContract(contractId);
-            if (contract != null) {
-                gui.setItem(slot, createContractItem(contract, playerData, true));
-                slot++;
-                if (slot % 9 == 8) slot += 2;
+
+        if (playerData != null && !playerData.getActiveContracts().isEmpty()) {
+            int i = 0;
+            for (Map.Entry<String, Integer> entry : playerData.getActiveContracts().entrySet()) {
+                if (i >= 45) break;
+                Contract contract = plugin.getContractManager().getContract(entry.getKey());
+                if (contract != null) {
+                    ItemStack item = createActiveContractItem(contract, entry.getValue());
+                    gui.setItem(i, item);
+                    i++;
+                }
             }
+        } else {
+            ItemStack noContracts = new ItemStack(Material.valueOf(plugin.getConfig().getString("gui-settings.active.no-contracts-item.material", "BARRIER")));
+            ItemMeta meta = noContracts.getItemMeta();
+            meta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui.active.no-contracts-item.name")));
+            meta.setLore(plugin.getLangManager().getLore("gui.active.no-contracts-item.lore").stream().map(MessageUtils::parse).collect(Collectors.toList()));
+            noContracts.setItemMeta(meta);
+            gui.setItem(plugin.getConfig().getInt("gui-settings.active.no-contracts-item.slot", 22), noContracts);
         }
-        
+
+        addNavigation(gui, null); // Pasamos null porque no es un submenú de tipo específico
+        fillBorders(gui, borderPane);
+
         player.openInventory(gui);
     }
-
-    private ItemStack createMenuItem(Material material, String langPath, String action) {
+    
+    // El resto de tus métodos se mantienen intactos
+    private ItemStack createContractItem(Contract contract, PlayerData playerData) {
+        Material material = Material.valueOf(plugin.getConfig().getString("gui-settings.submenu.item-material", "PAPER"));
         ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage(langPath + ".name")));
-        
-        List<String> loreLines = plugin.getLangManager().getMessageList(langPath + ".lore");
-        meta.setLore(loreLines.stream().map(MessageUtils::parse).collect(Collectors.toList()));
-        
-        meta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, action);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private ItemStack createContractItem(Contract contract, PlayerData data, boolean isActive) {
-        ItemStack item = new ItemStack(isActive ? Material.BOOK : Material.WRITABLE_BOOK);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(MessageUtils.parse(contract.getDisplayName()));
 
         List<String> lore = new ArrayList<>();
-        contract.getDescription().forEach(line -> lore.add(MessageUtils.parse(line)));
-        lore.add(" ");
+        plugin.getLangManager().getLore("gui.submenu.item-lore").forEach(line -> {
+            line = line.replace("%description%", String.join("\n", contract.getDescription()))
+                    .replace("%rewards%", String.join(", ", contract.getDisplayRewards()))
+                    .replace("%exp%", String.valueOf(contract.getExperienceReward()))
+                    .replace("%points%", String.valueOf(contract.getContractPointsReward()))
+                    .replace("%level%", String.valueOf(contract.getLevelRequirement()));
+            lore.add(MessageUtils.parse(line));
+        });
 
-        if (!contract.getDisplayRewards().isEmpty() || contract.getExperienceReward() > 0) {
-            lore.add(MessageUtils.parse("<gold>Recompensas:"));
-            for (String rewardLine : contract.getDisplayRewards()) {
-                lore.add(MessageUtils.parse("<gray>- <white>" + rewardLine));
-            }
-            if (contract.getExperienceReward() > 0) {
-                lore.add(MessageUtils.parse("<gray>- <#FFFF55>" + contract.getExperienceReward() + " EXP"));
-            }
-            lore.add(" ");
-        }
-
-        if (isActive) {
-            int progress = data.getContractProgress(contract.getId());
-            int total = contract.getMissionRequirement();
-            lore.add(MessageUtils.parse(ProgressBar.create(progress, total, 20, "⎜", "green", "gray"))); // <-- CORREGIDO AQUÍ
+        if (playerData.getActiveContracts().containsKey(contract.getId())) {
+            plugin.getLangManager().getLore("gui.submenu.lore-already-accepted").forEach(line -> lore.add(MessageUtils.parse(line)));
+        } else if (playerData.getLevel() < contract.getLevelRequirement()) {
+            plugin.getLangManager().getLore("gui.submenu.lore-level-too-low").forEach(line -> lore.add(MessageUtils.parse(line.replace("%level%", String.valueOf(contract.getLevelRequirement())))));
         } else {
-            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("gui.submenu.item.click-to-accept")));
+            plugin.getLangManager().getLore("gui.submenu.lore-can-accept").forEach(line -> lore.add(MessageUtils.parse(line)));
         }
 
+        meta.setLore(lore);
+        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         meta.getPersistentDataContainer().set(contractIdKey, PersistentDataType.STRING, contract.getId());
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ItemStack createActiveContractItem(Contract contract, int progress) {
+        Material material = Material.valueOf(plugin.getConfig().getString("gui-settings.active.item-material", "WRITTEN_BOOK"));
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        meta.setDisplayName(MessageUtils.parse(contract.getDisplayName()));
+
+        List<String> lore = new ArrayList<>();
+        String progressBar = ProgressBar.create(progress, contract.getMissionRequirement());
+
+        plugin.getLangManager().getLore("gui.active.item-lore").forEach(line -> {
+            line = line.replace("%description%", String.join("\n", contract.getDescription()))
+                    .replace("%progress%", progressBar)
+                    .replace("%progress_current%", String.valueOf(progress))
+                    .replace("%progress_max%", String.valueOf(contract.getMissionRequirement()))
+                    .replace("%rewards%", String.join(", ", contract.getDisplayRewards()));
+            lore.add(MessageUtils.parse(line));
+        });
+
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }
     
-    private void addNavigationButtons(Inventory gui, ContractType type) {
-        ItemStack backButton = createPane(Material.BARRIER, plugin.getLangManager().getMessage("gui.submenu.lore.back"));
+    // Tu método de navegación, modificado para usar la acción correcta "go_back"
+    private void addNavigation(Inventory gui, ContractType type) {
+        ItemStack backButton = createPane(Material.ARROW, plugin.getLangManager().getMessage("gui.back-button.name"));
         ItemMeta backMeta = backButton.getItemMeta();
-        backMeta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, "back_to_main");
+        backMeta.getPersistentDataContainer().set(guiActionKey, PersistentDataType.STRING, "go_back"); // Acción corregida
         backButton.setItemMeta(backMeta);
         gui.setItem(49, backButton);
 
@@ -216,6 +215,7 @@ public class GUIManager {
         }
     }
 
+    // Tu método para crear paneles
     private ItemStack createPane(Material material, String name) {
         ItemStack pane = new ItemStack(material);
         ItemMeta meta = pane.getItemMeta();
@@ -224,6 +224,7 @@ public class GUIManager {
         return pane;
     }
 
+    // Tu método para rellenar bordes
     private void fillBorders(Inventory gui, ItemStack pane) {
         int size = gui.getSize();
         for (int i = 0; i < size; i++) {

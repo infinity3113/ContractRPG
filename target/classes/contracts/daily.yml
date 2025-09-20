@@ -1,6 +1,3 @@
-# ======================================================================
-# ===              ARCHIVO DE MISIONES DIARIAS                       ===
-# ======================================================================
 contracts:
   # --- RANGO DE NIVEL 1-5 ---
   daily_hunt_cows_1:
@@ -583,4 +580,3 @@ contracts:
     experience-reward: 290
     contract-points-reward: 115
     level-requirement: 20
-}
