@@ -73,7 +73,7 @@ public class ContractCommand implements CommandExecutor {
                 }
                 return true;
             }
-            
+
             if (args[0].equalsIgnoreCase("stats")) {
                 PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
                 if (playerData == null) return true;
@@ -84,14 +84,16 @@ public class ContractCommand implements CommandExecutor {
                             .replace("%level%", String.valueOf(playerData.getLevel()))
                             .replace("%current_exp%", String.valueOf(playerData.getExperience()))
                             .replace("%required_exp%", String.valueOf(playerData.getRequiredExperience()))
-                            .replace("%contract_points%", String.valueOf(playerData.getContractPoints())) // <-- AÑADIDO
+                            .replace("%contract_points%", String.valueOf(playerData.getContractPoints()))
                     ));
                 }
                 return true;
             }
         }
-
-        plugin.getGuiManager().openMainMenu(player);
+        
+        // ===== CORRECCIÓN AQUÍ =====
+        // Se corrige la llamada para abrir el menú correcto.
+        plugin.getGuiManager().openMainGUI(player);
         return true;
     }
 }

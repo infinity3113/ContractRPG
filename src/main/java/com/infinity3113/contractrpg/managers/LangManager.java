@@ -61,7 +61,6 @@ public class LangManager {
         return config.getString(path, "<red>Missing message: " + path);
     }
     
-    // ¡NUEVO MÉTODO! Para leer listas de texto correctamente.
     public List<String> getMessageList(String path) {
         FileConfiguration config = langConfigs.get(defaultLang);
         if (config == null || !config.isList(path)) {
@@ -78,7 +77,6 @@ public class LangManager {
         return message.replace("%prefix%", this.prefix);
     }
 
-    // MÉTODO AÑADIDO PARA SOLUCIONAR EL ERROR
     public String getTranslation(String path) {
         return getMessage(path);
     }

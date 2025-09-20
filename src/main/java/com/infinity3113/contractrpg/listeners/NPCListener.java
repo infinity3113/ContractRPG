@@ -26,16 +26,14 @@ public class NPCListener implements Listener {
         int npcId = plugin.getConfig().getInt("delivery-npc-id");
 
         if (event.getNPC().getId() == npcId) {
-            // Intentar entregar MMOItem primero
             boolean deliveredMmoItem = tryDeliverMmoItem(player);
             if (deliveredMmoItem) return;
 
-            // Si no, intentar entregar item de vanilla
             boolean deliveredVanilla = tryDeliverVanillaItem(player);
             if (deliveredVanilla) return;
 
-            // Si no se pudo entregar nada, abrir el menú
-            plugin.getGuiManager().openMainMenu(player);
+            // ===== CORRECCIÓN AQUÍ =====
+            plugin.getGuiManager().openMainGUI(player);
         }
     }
 
@@ -72,7 +70,7 @@ public class NPCListener implements Listener {
                         return true;
                     }
                 } catch (IllegalArgumentException e) {
-                    // El objetivo no era un material de Minecraft válido, ignorar
+                    // Ignorar
                 }
             }
         }

@@ -69,7 +69,8 @@ public class PlaceholderManager extends PlaceholderExpansion {
         if (params.equalsIgnoreCase("exp")) return String.valueOf(data.getExperience());
         if (params.equalsIgnoreCase("exp_required")) return String.valueOf(data.getRequiredExperience());
         if (params.equalsIgnoreCase("exp_bar")) {
-            return ProgressBar.create(data.getExperience(), data.getRequiredExperience(), 20, "|", "&a", "&7");
+            // CORRECCIÓN: Llamada correcta al método create
+            return ProgressBar.create(data.getExperience(), data.getRequiredExperience(), 20, "|", "<green>", "<gray>");
         }
 
         if (params.equalsIgnoreCase("active_contracts_count")) return String.valueOf(data.getActiveContracts().size());

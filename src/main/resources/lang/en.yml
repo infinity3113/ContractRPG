@@ -9,6 +9,7 @@ contract_limit_reached: "%prefix%<red>You have reached the contract limit for th
 daily_mission_progress_lost: "%prefix%<yellow>The progress of your uncompleted daily missions has been reset."
 weekly_mission_progress_lost: "%prefix%<yellow>The progress of your uncompleted weekly mission has been reset."
 actionbar_progress: "<#32CD32>Mission Progress: <white>%mission% (%current%/%required%)"
+not-enough-level: "%prefix%<red>You are not a high enough level for this contract. You need to be level %level%."
 
 # --- Level Messages ---
 level_up: "%prefix%<bold><#32CD32>You have leveled up to Level %level%!</bold>"

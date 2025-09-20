@@ -1,15 +1,14 @@
 package com.infinity3113.contractrpg.contracts;
 
 import com.infinity3113.contractrpg.ContractRPG;
+import com.infinity3113.contractrpg.data.PlayerData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ContractManager {
 
@@ -29,7 +28,7 @@ public class ContractManager {
     }
 
     private void loadContractsFromFile(String fileName, ContractType type) {
-        File file = new File(plugin.getDataFolder() + "/contracts", fileName);
+        File file = new File(plugin.getDataFolder(), "contracts/" + fileName);
         if (!file.exists()) {
             plugin.saveResource("contracts/" + fileName, false);
         }
@@ -65,19 +64,39 @@ public class ContractManager {
         }
     }
 
+    public List<Contract> getOfferedContracts(PlayerData playerData, ContractType type, int amount) {
+        // CORRECCIÓN DEL ERROR "final": Se asigna el set correcto a una variable final.
+        final Set<String> completedContracts;
+        if (type == ContractType.DAILY) {
+            completedContracts = playerData.getCompletedDailyContracts();
+        } else if (type == ContractType.WEEKLY) {
+            completedContracts = playerData.getCompletedWeeklyContracts();
+        } else {
+            completedContracts = new HashSet<>();
+        }
+
+        List<Contract> availableContracts = contracts.values().stream()
+                .filter(c -> c.getContractType() == type)
+                .filter(c -> playerData.getLevel() >= c.getLevelRequirement())
+                .filter(c -> !completedContracts.contains(c.getId()))
+                .filter(c -> !playerData.getActiveContracts().containsKey(c.getId()))
+                .collect(Collectors.toList());
+
+        Collections.shuffle(availableContracts);
+
+        return availableContracts.stream().limit(amount).collect(Collectors.toList());
+    }
+
     public String getFormattedMission(Contract contract) {
         if (contract == null) {
             return "Misión desconocida";
         }
         String format = plugin.getLangManager().getMessage("mission-formats." + contract.getMissionType().name());
         
-        // ===== CORRECCIÓN AQUÍ =====
-        // Se corrige la llamada a getMessage para que solo use un parámetro.
         String targetKey = "translation-keys." + contract.getMissionObjective();
         String translatedTarget = plugin.getLangManager().getMessage(targetKey); 
-        // Si no hay traducción, LangManager devuelve la clave, así que comprobamos si son iguales.
         if(translatedTarget.equals(targetKey)) {
-            translatedTarget = contract.getMissionObjective(); // Usamos el objetivo original si no hay traducción
+            translatedTarget = contract.getMissionObjective(); 
         }
 
         return format
@@ -88,7 +107,8 @@ public class ContractManager {
     public Contract getContract(String id) {
         return contracts.get(id);
     }
-
+    
+    // --- MÉTODO RESTAURADO PARA COMPATIBILIDAD CON ContractGUI.java ---
     public List<Contract> getContractsByType(ContractType type) {
         List<Contract> result = new ArrayList<>();
         for (Contract contract : contracts.values()) {

@@ -40,8 +40,7 @@ public class ContractGUI {
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (playerData == null) return;
         
-        // --- Ítem de Estadísticas ---
-        ItemStack statsItem = new ItemStack(Material.PLAYER_HEAD); // O el material que prefieras
+        ItemStack statsItem = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta statsMeta = statsItem.getItemMeta();
         statsMeta.setDisplayName(MessageUtils.parse(plugin.getLangManager().getMessage("gui-stats-item-name")));
         
@@ -56,14 +55,12 @@ public class ContractGUI {
         }
         statsMeta.setLore(statsLore);
         statsItem.setItemMeta(statsMeta);
-        gui.setItem(4, statsItem); // Posición central superior
+        gui.setItem(4, statsItem);
 
-        // --- Contratos ---
         addContractItems(gui, ContractType.DAILY, 10);
         addContractItems(gui, ContractType.WEEKLY, 19);
         addContractItems(gui, ContractType.SPECIAL, 28);
         
-        // --- Paneles de Relleno ---
         ItemStack grayPane = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta meta = grayPane.getItemMeta();
         meta.setDisplayName(" ");
@@ -100,14 +97,14 @@ public class ContractGUI {
                 lore.add(MessageUtils.parse("<yellow>Status: <gold>En Progreso"));
                 int progress = playerData.getContractProgress(contract.getId());
                 int total = contract.getMissionRequirement();
-                lore.add(MessageUtils.parse(ProgressBar.create(progress, total, 20, "|", "&a", "&c")));
+                // CORRECCIÓN: Llamada correcta al método create
+                lore.add(MessageUtils.parse(ProgressBar.create(progress, total, 20, "|", "<green>", "<red>")));
             } else {
                  lore.add(MessageUtils.parse("<yellow>Status: <green>Disponible"));
                  lore.add(" ");
                  lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("gui_click_to_accept")));
             }
 
-            // --- Vista Previa de Recompensas ---
             lore.add(" ");
             lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("gui-rewards-preview-header")));
             for(String rewardLine : contract.getDisplayRewards()){
