@@ -36,7 +36,10 @@ public class YamlStorage extends StorageManager {
                 playerData.deserializeActiveContracts(playerConfig.getString("active-contracts"));
                 playerData.deserializeCompletedDaily(playerConfig.getString("completed-daily"));
                 playerData.deserializeCompletedWeekly(playerConfig.getString("completed-weekly"));
-                playerData.deserializePurchasedShopItems(playerConfig.getString("purchased-shop-items")); // <-- MODIFICADO
+                playerData.deserializePurchasedShopItems(playerConfig.getString("purchased-shop-items"));
+
+                // Cargar el nuevo timestamp
+                playerData.setLastDailyResetTimestamp(playerConfig.getLong("last-daily-reset-timestamp", 0));
 
             } else {
                 playerData = new PlayerData(uuid);
@@ -68,7 +71,10 @@ public class YamlStorage extends StorageManager {
         playerConfig.set("active-contracts", playerData.serializeActiveContracts());
         playerConfig.set("completed-daily", playerData.serializeCompletedDaily());
         playerConfig.set("completed-weekly", playerData.serializeCompletedWeekly());
-        playerConfig.set("purchased-shop-items", playerData.serializePurchasedShopItems()); // <-- MODIFICADO
+        playerConfig.set("purchased-shop-items", playerData.serializePurchasedShopItems());
+
+        // Guardar el nuevo timestamp
+        playerConfig.set("last-daily-reset-timestamp", playerData.getLastDailyResetTimestamp());
 
         try {
             playerConfig.save(playerFile);

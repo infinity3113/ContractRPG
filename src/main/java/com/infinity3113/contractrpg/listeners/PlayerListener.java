@@ -17,6 +17,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerListener implements Listener {
 
@@ -28,7 +29,22 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        plugin.getStorageManager().loadPlayerData(event.getPlayer().getUniqueId());
+        Player player = event.getPlayer();
+        plugin.getStorageManager().loadPlayerData(player.getUniqueId());
+
+        // Añadir un retraso para asegurar que los datos del jugador se hayan cargado
+        // antes de intentar reiniciarlos. 20 ticks = 1 segundo.
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+                if (playerData != null) {
+                    // Llamamos a la lógica de reinicio para este jugador.
+                    // El método se encargará de comprobar si es necesario o no.
+                    plugin.performMissionReset(player);
+                }
+            }
+        }.runTaskLater(plugin, 20L);
     }
 
     @EventHandler

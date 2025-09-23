@@ -142,54 +142,89 @@ public final class ContractRPG extends JavaPlugin {
         playerData.removeContract(contract.getId());
     }
 
-    public void performMissionReset() {
+    public void performMissionReset(Player player) {
+        PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+        if (playerData == null) return;
+
+        Calendar now = Calendar.getInstance();
+        Calendar lastReset = Calendar.getInstance();
+        lastReset.setTimeInMillis(playerData.getLastDailyResetTimestamp());
+
+        // Comprobar si ya se ha reiniciado hoy
+        if (now.get(Calendar.YEAR) == lastReset.get(Calendar.YEAR) &&
+                now.get(Calendar.DAY_OF_YEAR) == lastReset.get(Calendar.DAY_OF_YEAR)) {
+            return; // Ya se reinició hoy, no hacer nada
+        }
+
+        getLogger().info("Executing mission reset task for " + player.getName() + "...");
+
         boolean resetDaily = getConfig().getBoolean("daily-missions.reset-unfinished-on-new-offer", false);
         boolean resetWeekly = getConfig().getBoolean("weekly-missions.reset-unfinished-on-new-offer", false);
-        Calendar checkTime = Calendar.getInstance();
-        boolean isWeeklyResetDay = (checkTime.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
+        boolean isWeeklyResetDay = (now.get(Calendar.DAY_OF_WEEK) == Calendar.MONDAY);
 
-        getLogger().info("Executing mission reset task...");
+        boolean dailyProgressLost = false;
+        boolean weeklyProgressLost = false;
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
-            if (playerData == null) continue;
+        playerData.clearCompletedDailyContracts();
 
-            boolean dailyProgressLost = false;
-            boolean weeklyProgressLost = false;
-
-            playerData.clearCompletedDailyContracts();
-
-            if (isWeeklyResetDay) {
-                playerData.clearCompletedWeeklyContracts();
-            }
-
-            Set<String> activeContracts = new HashSet<>(playerData.getActiveContracts().keySet());
-            for (String contractId : activeContracts) {
-                Contract contract = getContractManager().getContract(contractId);
-                if (contract == null) continue;
-
-                if (resetDaily && contract.getContractType() == ContractType.DAILY) {
-                    playerData.removeContract(contractId);
-                    dailyProgressLost = true;
-                }
-
-                if (isWeeklyResetDay && resetWeekly && contract.getContractType() == ContractType.WEEKLY) {
-                    playerData.removeContract(contractId);
-                    weeklyProgressLost = true;
-                }
-            }
-
-            if (dailyProgressLost) {
-                MessageUtils.sendMessage(player, getLangManager().getMessage("daily_mission_progress_lost"));
-            }
-            if (weeklyProgressLost) {
-                MessageUtils.sendMessage(player, getLangManager().getMessage("weekly_mission_progress_lost"));
-            }
-            
-            MessageUtils.sendMessage(player, getLangManager().getMessage("contracts_offered"));
+        if (isWeeklyResetDay) {
+            playerData.clearCompletedWeeklyContracts();
         }
-        getLogger().info("Mission reset task finished.");
+
+        Set<String> activeContracts = new HashSet<>(playerData.getActiveContracts().keySet());
+        for (String contractId : activeContracts) {
+            Contract contract = getContractManager().getContract(contractId);
+            if (contract == null) continue;
+
+            if (resetDaily && contract.getContractType() == ContractType.DAILY) {
+                playerData.removeContract(contractId);
+                dailyProgressLost = true;
+            }
+
+            if (isWeeklyResetDay && resetWeekly && contract.getContractType() == ContractType.WEEKLY) {
+                playerData.removeContract(contractId);
+                weeklyProgressLost = true;
+            }
+        }
+
+        if (dailyProgressLost) {
+            MessageUtils.sendMessage(player, getLangManager().getMessage("daily_mission_progress_lost"));
+        }
+        if (weeklyProgressLost) {
+            MessageUtils.sendMessage(player, getLangManager().getMessage("weekly_mission_progress_lost"));
+        }
+
+        // Actualizar el timestamp del último reinicio
+        playerData.setLastDailyResetTimestamp(System.currentTimeMillis());
+
+        MessageUtils.sendMessage(player, getLangManager().getMessage("contracts_offered"));
+        getLogger().info("Mission reset task finished for " + player.getName() + ".");
     }
+
+    // <-- MÉTODO NUEVO PARA EL COMANDO DE ADMIN -->
+    public void performAdminMissionReset() {
+        getLogger().info("Admin forced mission reset for all online players...");
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            // Reiniciamos el timestamp para forzar la actualización
+            PlayerData playerData = getStorageManager().getPlayerDataFromCache(player.getUniqueId());
+            if (playerData != null) {
+                playerData.setLastDailyResetTimestamp(0);
+            }
+            performMissionReset(player);
+        }
+        getLogger().info("Admin mission reset finished.");
+    }
+
+
+    private void performGlobalMissionReset() {
+        // Este método se llamará a medianoche solo para los jugadores en línea
+        getLogger().info("Executing scheduled global mission reset...");
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            performMissionReset(player);
+        }
+        getLogger().info("Global mission reset task finished.");
+    }
+
 
     private void startMissionResetTimer() {
         Calendar now = Calendar.getInstance();
@@ -206,7 +241,7 @@ public final class ContractRPG extends JavaPlugin {
         new BukkitRunnable() {
             @Override
             public void run() {
-                performMissionReset();
+                performGlobalMissionReset();
             }
         }.runTaskTimer(this, delayInTicks, periodInTicks);
         getLogger().info("Mission reset timer has been scheduled successfully.");

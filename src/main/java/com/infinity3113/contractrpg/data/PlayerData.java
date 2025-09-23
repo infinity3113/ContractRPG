@@ -24,6 +24,7 @@ public class PlayerData {
     private Set<String> completedDailyContracts;
     private Set<String> completedWeeklyContracts;
     private Map<String, Long> purchasedShopItems; // <-- AÑADIDO PARA LA TIENDA
+    private long lastDailyResetTimestamp; // <-- AÑADIDO PARA CORRECCIÓN
     private static final Gson gson = new GsonBuilder().create();
 
     public PlayerData(UUID uuid) {
@@ -35,7 +36,9 @@ public class PlayerData {
         this.completedDailyContracts = new HashSet<>();
         this.completedWeeklyContracts = new HashSet<>();
         this.purchasedShopItems = new ConcurrentHashMap<>(); // <-- AÑADIDO PARA LA TIENDA
+        this.lastDailyResetTimestamp = 0; // <-- AÑADIDO PARA CORRECCIÓN
     }
+
     //GETTERS
     public UUID getUuid() { return uuid; }
     public int getLevel() { return level; }
@@ -45,6 +48,7 @@ public class PlayerData {
     public Set<String> getCompletedDailyContracts() { return completedDailyContracts; }
     public Set<String> getCompletedWeeklyContracts() { return completedWeeklyContracts; }
     public Map<String, Long> getPurchasedShopItems() { return purchasedShopItems; } // <-- AÑADIDO PARA LA TIENDA
+    public long getLastDailyResetTimestamp() { return lastDailyResetTimestamp; } // <-- AÑADIDO PARA CORRECCIÓN
 
     //SETTERS
     public void setLevel(int level) { this.level = level; }
@@ -54,6 +58,8 @@ public class PlayerData {
     public void setCompletedDailyContracts(Set<String> contracts) { this.completedDailyContracts = contracts; }
     public void setCompletedWeeklyContracts(Set<String> contracts) { this.completedWeeklyContracts = contracts; }
     public void setPurchasedShopItems(Map<String, Long> items) { this.purchasedShopItems = items; } // <-- AÑADIDO PARA LA TIENDA
+    public void setLastDailyResetTimestamp(long timestamp) { this.lastDailyResetTimestamp = timestamp; } // <-- AÑADIDO PARA CORRECCIÓN
+
 
     // LOGICA
     public void addExperience(int amount) {

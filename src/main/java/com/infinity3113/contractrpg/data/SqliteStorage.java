@@ -31,14 +31,16 @@ public class SqliteStorage extends StorageManager {
                         "active_contracts TEXT," +
                         "completed_daily TEXT," +
                         "completed_weekly TEXT," +
-                        "purchased_shop_items TEXT" + // <-- MODIFICADO
+                        "purchased_shop_items TEXT," +
+                        "last_daily_reset_timestamp INTEGER" + // <-- AÑADIDO
                         ");";
                 stmt.execute(sql);
                 
                 // Asegurarse de que las columnas existan si la tabla ya fue creada
                 addColumnIfNotExists("completed_daily", "TEXT");
                 addColumnIfNotExists("completed_weekly", "TEXT");
-                addColumnIfNotExists("purchased_shop_items", "TEXT"); // <-- MODIFICADO
+                addColumnIfNotExists("purchased_shop_items", "TEXT");
+                addColumnIfNotExists("last_daily_reset_timestamp", "INTEGER"); // <-- AÑADIDO
             }
         } catch (SQLException e) {
             plugin.getLogger().severe("Could not connect to SQLite database!");
@@ -50,7 +52,7 @@ public class SqliteStorage extends StorageManager {
     public void loadPlayerDataAsync(UUID uuid) {
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             PlayerData playerData = null;
-            String sql = "SELECT level, experience, active_contracts, completed_daily, completed_weekly, purchased_shop_items FROM player_data WHERE uuid = ?"; // <-- MODIFICADO
+            String sql = "SELECT level, experience, active_contracts, completed_daily, completed_weekly, purchased_shop_items, last_daily_reset_timestamp FROM player_data WHERE uuid = ?"; // <-- MODIFICADO
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, uuid.toString());
                 ResultSet rs = pstmt.executeQuery();
@@ -62,7 +64,8 @@ public class SqliteStorage extends StorageManager {
                     playerData.deserializeActiveContracts(rs.getString("active_contracts"));
                     playerData.deserializeCompletedDaily(rs.getString("completed_daily"));
                     playerData.deserializeCompletedWeekly(rs.getString("completed_weekly"));
-                    playerData.deserializePurchasedShopItems(rs.getString("purchased_shop_items")); // <-- MODIFICADO
+                    playerData.deserializePurchasedShopItems(rs.getString("purchased_shop_items"));
+                    playerData.setLastDailyResetTimestamp(rs.getLong("last_daily_reset_timestamp")); // <-- AÑADIDO
                 }
             } catch (SQLException e) {
                 plugin.getLogger().severe("Error loading data for " + uuid.toString());
@@ -87,7 +90,7 @@ public class SqliteStorage extends StorageManager {
 
     @Override
     public void savePlayerDataSync(PlayerData playerData) {
-        String sql = "INSERT OR REPLACE INTO player_data (uuid, level, experience, active_contracts, completed_daily, completed_weekly, purchased_shop_items) VALUES (?, ?, ?, ?, ?, ?, ?)"; // <-- MODIFICADO
+        String sql = "INSERT OR REPLACE INTO player_data (uuid, level, experience, active_contracts, completed_daily, completed_weekly, purchased_shop_items, last_daily_reset_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"; // <-- MODIFICADO
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setString(1, playerData.getUuid().toString());
             pstmt.setInt(2, playerData.getLevel());
@@ -95,7 +98,8 @@ public class SqliteStorage extends StorageManager {
             pstmt.setString(4, playerData.serializeActiveContracts());
             pstmt.setString(5, playerData.serializeCompletedDaily());
             pstmt.setString(6, playerData.serializeCompletedWeekly());
-            pstmt.setString(7, playerData.serializePurchasedShopItems()); // <-- MODIFICADO
+            pstmt.setString(7, playerData.serializePurchasedShopItems());
+            pstmt.setLong(8, playerData.getLastDailyResetTimestamp()); // <-- AÑADIDO
             pstmt.executeUpdate();
         } catch (SQLException e) {
             plugin.getLogger().severe("Error saving data for " + playerData.getUuid().toString());

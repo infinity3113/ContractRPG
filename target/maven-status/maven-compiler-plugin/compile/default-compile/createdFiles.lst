@@ -22,6 +22,7 @@ com\infinity3113\contractrpg\shop\ShopGUI$ShopEditorHolder.class
 com\infinity3113\contractrpg\contracts\ContractManager.class
 com\infinity3113\contractrpg\gui\ContractGUI.class
 com\infinity3113\contractrpg\contracts\ContractType.class
+com\infinity3113\contractrpg\listeners\PlayerListener$1.class
 com\infinity3113\contractrpg\shop\ShopListener.class
 com\infinity3113\contractrpg\listeners\GUIListener.class
 com\infinity3113\contractrpg\managers\GUIManager.class

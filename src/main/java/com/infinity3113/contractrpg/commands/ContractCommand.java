@@ -48,7 +48,8 @@ public class ContractCommand implements CommandExecutor {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                plugin.performMissionReset();
+                // <-- LÍNEA CORREGIDA -->
+                plugin.performAdminMissionReset(); 
                 MessageUtils.sendMessage(player, langManager.getMessage("missions-manually-reset"));
                 return true;
             }
