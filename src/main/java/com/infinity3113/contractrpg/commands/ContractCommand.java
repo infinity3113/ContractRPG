@@ -38,7 +38,7 @@ public class ContractCommand implements CommandExecutor {
                 }
                 plugin.reloadConfig();
                 plugin.getLangManager().loadLanguages();
-                plugin.getShopManager().reloadConfig(); // Recargar tienda
+                plugin.getShopManager().reloadConfig();
                 MessageUtils.sendMessage(player, langManager.getMessage("plugin-reloaded"));
                 return true;
             }
@@ -88,13 +88,13 @@ public class ContractCommand implements CommandExecutor {
                 return true;
             }
 
-            // ===== CÓDIGO DE LA TIENDA AÑADIDO =====
             if (args[0].equalsIgnoreCase("shop") || args[0].equalsIgnoreCase("tienda")) {
                 if (!player.hasPermission("contractrpg.shop.open")) {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                plugin.getShopGUI().openShop(player); // Necesitarás implementar este método en ShopGUI
+                // ===== CORREGIDO: Se abre la página 0 =====
+                plugin.getShopGUI().openShop(player, 0);
                 return true;
             }
 
@@ -103,12 +103,12 @@ public class ContractCommand implements CommandExecutor {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                plugin.getShopGUI().openEditor(player);
+                // ===== CORREGIDO: Se abre la página 0 =====
+                plugin.getShopGUI().openEditor(player, 0);
                 return true;
             }
-            // ===== FIN DEL CÓDIGO DE LA TIENDA =====
         }
-        
+
         plugin.getGuiManager().openMainGUI(player);
         return true;
     }

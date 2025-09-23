@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -42,30 +43,64 @@ public class ShopListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         InventoryHolder holder = event.getInventory().getHolder();
+
         if (holder instanceof ShopGUI.ShopEditorHolder) {
+            handlePagination(event, holder);
             handleMainEditorClick(event);
         } else if (holder instanceof ShopGUI.ItemEditorHolder) {
             handleItemEditorClick(event, (ShopGUI.ItemEditorHolder) holder);
         } else if (holder instanceof ShopGUI.PlayerShopHolder) {
+            handlePagination(event, holder);
             handlePlayerShopClick(event);
         }
     }
 
+    private void handlePagination(InventoryClickEvent event, InventoryHolder holder) {
+        if (event.getSlot() != 45 && event.getSlot() != 53) return;
+        event.setCancelled(true);
+
+        Player player = (Player) event.getWhoClicked();
+        int currentPage = 0;
+        boolean isEditor = holder instanceof ShopGUI.ShopEditorHolder;
+
+        if (isEditor) {
+            currentPage = ((ShopGUI.ShopEditorHolder) holder).getPage();
+        } else {
+            currentPage = ((ShopGUI.PlayerShopHolder) holder).getPage();
+        }
+
+        if (event.getSlot() == 45) { // Página Anterior
+            if (isEditor) plugin.getShopGUI().openEditor(player, currentPage - 1);
+            else plugin.getShopGUI().openShop(player, currentPage - 1);
+        } else if (event.getSlot() == 53) { // Página Siguiente
+            if (isEditor) plugin.getShopGUI().openEditor(player, currentPage + 1);
+            else plugin.getShopGUI().openShop(player, currentPage + 1);
+        }
+    }
+
     private void handlePlayerShopClick(InventoryClickEvent event) {
+        if (event.getSlot() >= 45) return;
         event.setCancelled(true);
         if (event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) return;
 
         Player player = (Player) event.getWhoClicked();
-        int slot = event.getSlot();
-
-        ShopItem shopItem = plugin.getShopManager().getItem(slot);
+        
+        List<Map.Entry<Integer, ShopItem>> sortedItems = new ArrayList<>(plugin.getShopManager().getShopItems().entrySet());
+        sortedItems.sort(Map.Entry.comparingByKey());
+        
+        int page = ((ShopGUI.PlayerShopHolder) event.getInventory().getHolder()).getPage();
+        int index = (page * 45) + event.getSlot();
+        if (index >= sortedItems.size()) return;
+        
+        int originalSlot = sortedItems.get(index).getKey();
+        ShopItem shopItem = plugin.getShopManager().getItem(originalSlot);
         if (shopItem == null) return;
 
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (playerData == null) return;
 
         if (shopItem.getCooldown() > 0) {
-            long lastPurchase = playerData.getPurchasedShopItems().getOrDefault(String.valueOf(slot), 0L);
+            long lastPurchase = playerData.getPurchasedShopItems().getOrDefault(String.valueOf(originalSlot), 0L);
             long timeSince = (System.currentTimeMillis() - lastPurchase) / 1000;
             if (timeSince < shopItem.getCooldown()) {
                 MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.on-cooldown"));
@@ -81,56 +116,56 @@ public class ShopListener implements Listener {
             return;
         }
 
-
         playerData.setContractPoints(playerData.getContractPoints() - (int) shopItem.getPrice());
         if (!shopItem.isInfiniteStock()) {
             shopItem.setStock(shopItem.getStock() - 1);
         }
-        playerData.addPurchasedShopItem(String.valueOf(slot));
+        playerData.addPurchasedShopItem(String.valueOf(originalSlot));
         plugin.getShopManager().saveItems();
-
-        if (shopItem.getCommands() != null) {
-            for (String command : shopItem.getCommands()) {
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command.replace("%player%", player.getName()));
-            }
-        }
+        
         player.getInventory().addItem(shopItem.getItemStack().clone());
-
         MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.success.purchase")
                 .replace("%item%", shopItem.getItemStack().hasItemMeta() && shopItem.getItemStack().getItemMeta().hasDisplayName() ? shopItem.getItemStack().getItemMeta().getDisplayName() : shopItem.getItemStack().getType().name()));
 
-        plugin.getShopGUI().openShop(player);
+        plugin.getShopGUI().openShop(player, page);
     }
 
     private void handleMainEditorClick(InventoryClickEvent event) {
+        if (event.getSlot() >= 45 && event.getSlot() <= 53) return;
         Player player = (Player) event.getWhoClicked();
         if (event.getClickedInventory() != null && event.getClickedInventory().equals(player.getInventory())) return;
 
         event.setCancelled(true);
         ItemStack cursorItem = event.getCursor();
         ItemStack currentItem = event.getCurrentItem();
+        int page = ((ShopGUI.ShopEditorHolder) event.getInventory().getHolder()).getPage();
+        
+        int newSlot = plugin.getShopManager().getShopItems().keySet().stream().max(Integer::compare).orElse(-1) + 1;
 
         if (cursorItem != null && cursorItem.getType() != Material.AIR && (currentItem == null || currentItem.getType() == Material.AIR)) {
-            // ===== CORREGIDO: Inicializar la lista de comandos vacía en lugar de nula =====
-            plugin.getShopManager().setItem(event.getSlot(), new ShopItem(cursorItem.clone(), 0, 1, false, 0, new ArrayList<>()));
+            plugin.getShopManager().setItem(newSlot, new ShopItem(cursorItem.clone(), 0, 1, false, 0));
             cursorItem.setAmount(0);
-            plugin.getShopGUI().openEditor(player);
+            plugin.getShopGUI().openEditor(player, page);
             return;
         }
 
-        if (currentItem == null || currentItem.getType() == Material.AIR) return;
-        
-        // El item de ayuda no debe ser interactuable
-        if (currentItem.getType() == Material.BOOK && event.getSlot() == event.getInventory().getSize() -1) return;
+        if (currentItem == null || currentItem.getType().isAir()) return;
 
-        ShopItem shopItem = plugin.getShopManager().getItem(event.getSlot());
+        List<Map.Entry<Integer, ShopItem>> sortedItems = new ArrayList<>(plugin.getShopManager().getShopItems().entrySet());
+        sortedItems.sort(Map.Entry.comparingByKey());
+        int index = (page * 45) + event.getSlot();
+        if (index >= sortedItems.size()) return;
+
+        int originalSlot = sortedItems.get(index).getKey();
+        ShopItem shopItem = plugin.getShopManager().getItem(originalSlot);
+
         if (shopItem == null) return;
 
         if (event.getClick() == ClickType.LEFT) {
-            plugin.getShopGUI().openItemEditor(player, event.getSlot(), shopItem);
+            plugin.getShopGUI().openItemEditor(player, originalSlot, shopItem);
         } else if (event.getClick() == ClickType.RIGHT) {
-            plugin.getShopManager().setItem(event.getSlot(), null);
-            plugin.getShopGUI().openEditor(player);
+            plugin.getShopManager().setItem(originalSlot, null);
+            plugin.getShopGUI().openEditor(player, page);
         }
     }
 
@@ -156,15 +191,6 @@ public class ShopListener implements Listener {
             case CLOCK:
                 startChatInput(player, "cooldown", slot);
                 break;
-            case COMMAND_BLOCK:
-                if (event.getClick() == ClickType.LEFT) {
-                    startChatInput(player, "command", slot);
-                } else if (event.getClick() == ClickType.RIGHT) {
-                    shopItem.setCommands(new ArrayList<>());
-                    plugin.getShopManager().setItem(slot, shopItem);
-                    plugin.getShopGUI().openItemEditor(player, slot, shopItem);
-                }
-                break;
             case CHEST:
                 int amount = (event.getClick() == ClickType.LEFT) ? 1 : -1;
                 if (event.isShiftClick()) amount *= 10;
@@ -177,7 +203,8 @@ public class ShopListener implements Listener {
                 plugin.getShopGUI().openItemEditor(player, slot, shopItem);
                 break;
             case BARRIER:
-                plugin.getShopGUI().openEditor(player);
+                int page = plugin.getShopGUI().editorPages.getOrDefault(player.getUniqueId(), 0);
+                plugin.getShopGUI().openEditor(player, page);
                 break;
         }
     }
@@ -220,14 +247,6 @@ public class ShopListener implements Listener {
                     case "cooldown":
                         shopItem.setCooldown(Math.max(0, Long.parseLong(message)));
                         break;
-                    case "command":
-                        List<String> commands = shopItem.getCommands();
-                        if (commands == null) {
-                           commands = new ArrayList<>();
-                        }
-                        commands.add(message);
-                        shopItem.setCommands(commands);
-                        break;
                 }
                 plugin.getShopManager().setItem(slot, shopItem);
                 MessageUtils.sendMessage(player, "<green>¡Valor actualizado con éxito!</green>");
@@ -237,5 +256,12 @@ public class ShopListener implements Listener {
 
             plugin.getShopGUI().openItemEditor(player, slot, shopItem);
         });
+    }
+
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        plugin.getShopGUI().playerShopPages.remove(uuid);
+        plugin.getShopGUI().editorPages.remove(uuid);
     }
 }

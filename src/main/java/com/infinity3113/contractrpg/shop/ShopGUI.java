@@ -12,25 +12,31 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class ShopGUI {
 
     private final ContractRPG plugin;
+    public final Map<UUID, Integer> playerShopPages = new HashMap<>();
+    public final Map<UUID, Integer> editorPages = new HashMap<>();
+    private static final int ITEMS_PER_PAGE = 45; // 5 filas de 9 slots
 
     public ShopGUI(ContractRPG plugin) {
         this.plugin = plugin;
     }
 
     public static class PlayerShopHolder implements InventoryHolder {
+        private final int page;
+        public PlayerShopHolder(int page) { this.page = page; }
+        public int getPage() { return page; }
         @Override public @NotNull Inventory getInventory() { return null; }
     }
     public static class ShopEditorHolder implements InventoryHolder {
+        private final int page;
+        public ShopEditorHolder(int page) { this.page = page; }
+        public int getPage() { return page; }
         @Override public @NotNull Inventory getInventory() { return null; }
     }
     public static class ItemEditorHolder implements InventoryHolder {
@@ -40,51 +46,57 @@ public class ShopGUI {
         @Override public @NotNull Inventory getInventory() { return null; }
     }
 
-
-    public void openShop(Player player) {
-        String title = MessageUtils.parse(plugin.getShopManager().getConfig().getString("shop-title", "<bold><#F52E27>Tienda de Contratos</bold>"));
+    public void openShop(Player player, int page) {
+        playerShopPages.put(player.getUniqueId(), page);
+        String baseTitle = plugin.getShopManager().getConfig().getString("shop-title", "<bold><#F52E27>Tienda de Contratos</bold>");
         int size = plugin.getShopManager().getConfig().getInt("shop-size", 54);
-        Inventory shop = Bukkit.createInventory(new PlayerShopHolder(), size, title);
+        
+        List<Map.Entry<Integer, ShopItem>> sortedItems = new ArrayList<>(plugin.getShopManager().getShopItems().entrySet());
+        sortedItems.sort(Map.Entry.comparingByKey());
+
+        int maxPages = (int) Math.ceil((double) sortedItems.size() / ITEMS_PER_PAGE);
+        String title = MessageUtils.parse(baseTitle + " <dark_gray>(Pág " + (page + 1) + "/" + Math.max(1, maxPages) + ")</dark_gray>");
+
+        Inventory shop = Bukkit.createInventory(new PlayerShopHolder(page), size, title);
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (playerData == null) return;
 
-        for (Map.Entry<Integer, ShopItem> entry : plugin.getShopManager().getShopItems().entrySet()) {
-            if (entry.getKey() < size) {
-                shop.setItem(entry.getKey(), createPlayerDisplayItem(entry.getValue(), playerData, entry.getKey()));
+        int startIndex = page * ITEMS_PER_PAGE;
+        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+            int itemIndex = startIndex + i;
+            if (itemIndex < sortedItems.size()) {
+                Map.Entry<Integer, ShopItem> entry = sortedItems.get(itemIndex);
+                shop.setItem(i, createPlayerDisplayItem(entry.getValue(), playerData, entry.getKey()));
             }
         }
+        
+        addPaginationControls(shop, page, maxPages);
         player.openInventory(shop);
     }
 
-    public void openEditor(Player player) {
-        String title = MessageUtils.parse(plugin.getShopManager().getConfig().getString("editor-title", "<bold><#27A6F5>Editor de la Tienda</bold>"));
+    public void openEditor(Player player, int page) {
+        editorPages.put(player.getUniqueId(), page);
+        String baseTitle = plugin.getShopManager().getConfig().getString("editor-title", "<bold><#27A6F5>Editor de la Tienda</bold>");
         int size = plugin.getShopManager().getConfig().getInt("shop-size", 54);
-        Inventory editor = Bukkit.createInventory(new ShopEditorHolder(), size, title);
 
-        for (Map.Entry<Integer, ShopItem> entry : plugin.getShopManager().getShopItems().entrySet()) {
-            if (entry.getKey() < size) {
-                editor.setItem(entry.getKey(), createEditorDisplayItem(entry.getValue()));
-            }
+        List<Map.Entry<Integer, ShopItem>> sortedItems = new ArrayList<>(plugin.getShopManager().getShopItems().entrySet());
+        sortedItems.sort(Map.Entry.comparingByKey());
+
+        int maxPages = (int) Math.ceil((double) sortedItems.size() / ITEMS_PER_PAGE);
+        String title = MessageUtils.parse(baseTitle + " <dark_gray>(Pág " + (page + 1) + "/" + Math.max(1, maxPages) + ")</dark_gray>");
+        
+        Inventory editor = Bukkit.createInventory(new ShopEditorHolder(page), size, title);
+
+        int startIndex = page * ITEMS_PER_PAGE;
+        for (int i = 0; i < ITEMS_PER_PAGE; i++) {
+             int itemIndex = startIndex + i;
+             if(itemIndex < sortedItems.size()){
+                 Map.Entry<Integer, ShopItem> entry = sortedItems.get(itemIndex);
+                 editor.setItem(i, createEditorDisplayItem(entry.getValue()));
+             }
         }
         
-        // ===== AÑADIDO: ÍTEM DE AYUDA =====
-        ItemStack helpItem = new ItemStack(Material.BOOK);
-        ItemMeta helpMeta = helpItem.getItemMeta();
-        helpMeta.setDisplayName(MessageUtils.parse("<green><bold>¿Cómo usar el editor?</bold></green>"));
-        List<String> helpLore = new ArrayList<>();
-        helpLore.add(" ");
-        helpLore.add(MessageUtils.parse("<gray>» <white>Añadir: <yellow>Arrastra un ítem a un slot vacío."));
-        helpLore.add(MessageUtils.parse("<gray>» <white>Editar: <yellow>Click Izquierdo sobre un ítem."));
-        helpLore.add(MessageUtils.parse("<gray>» <white>Eliminar: <yellow>Click Derecho sobre un ítem."));
-        helpMeta.setLore(helpLore);
-        helpItem.setItemMeta(helpMeta);
-        
-        if (editor.getItem(size - 1) == null) {
-            editor.setItem(size - 1, helpItem);
-        }
-        // ===== FIN DEL ÍTEM DE AYUDA =====
-
-        fillBorders(editor, new ItemStack(Material.GRAY_STAINED_GLASS_PANE));
+        addPaginationControls(editor, page, maxPages);
         player.openInventory(editor);
     }
 
@@ -93,40 +105,45 @@ public class ShopGUI {
 
         itemEditor.setItem(4, shopItem.getItemStack());
 
-        itemEditor.setItem(19, createButton(Material.GOLD_INGOT, "<yellow><bold>Editar Precio</bold></yellow>", Arrays.asList(
+        itemEditor.setItem(20, createButton(Material.GOLD_INGOT, "<yellow><bold>Editar Precio</bold></yellow>", Arrays.asList(
                 "<gray>Precio actual: <gold>" + shopItem.getPrice() + "</gold>",
                 "<white>Click para cambiar."
         )));
 
-        itemEditor.setItem(21, createButton(Material.CHEST, "<aqua><bold>Editar Stock</bold></aqua>", Arrays.asList(
+        itemEditor.setItem(22, createButton(Material.CHEST, "<aqua><bold>Editar Stock</bold></aqua>", Arrays.asList(
                 "<gray>Stock: <blue>" + (shopItem.isInfiniteStock() ? "Infinito" : shopItem.getStock()) + "</blue>",
                 "<white>Click IZQ: +1 | Click DER: -1",
                 "<white>SHIFT + Click: +/- 10",
                 "<white>Click MEDIO: Infinito"
         )));
 
-        itemEditor.setItem(23, createButton(Material.CLOCK, "<#FF8C00><bold>Editar Reabastecimiento</bold></#FF8C00>", Arrays.asList(
+        itemEditor.setItem(24, createButton(Material.CLOCK, "<#FF8C00><bold>Editar Reabastecimiento</bold></#FF8C00>", Arrays.asList(
                 "<gray>Cooldown: <yellow>" + formatTime(shopItem.getCooldown()) + "</yellow>",
                 "<white>Click para cambiar (en segundos)."
         )));
-
-        List<String> commandLore = new ArrayList<>();
-        commandLore.add("<gray>Comandos a ejecutar:");
-        if (shopItem.getCommands() == null || shopItem.getCommands().isEmpty()) {
-            commandLore.add("<gray><italic>Ninguno</italic>");
-        } else {
-            shopItem.getCommands().forEach(cmd -> commandLore.add("<#ADD8E6>- " + cmd));
-        }
-        commandLore.add(" ");
-        commandLore.add("<white>Click IZQ para AÑADIR un comando.");
-        commandLore.add("<white>Click DER para LIMPIAR los comandos.");
-        itemEditor.setItem(25, createButton(Material.COMMAND_BLOCK, "<#32CD32><bold>Editar Comandos</bold></#32CD32>", commandLore));
-
-
+        
         itemEditor.setItem(31, createButton(Material.BARRIER, "<red><bold>Volver</bold></red>", null));
 
         fillBorders(itemEditor, new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
         player.openInventory(itemEditor);
+    }
+    
+    private void addPaginationControls(Inventory gui, int currentPage, int maxPages) {
+        ItemStack filler = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta meta = filler.getItemMeta();
+        meta.setDisplayName(" ");
+        filler.setItemMeta(meta);
+
+        for (int i = ITEMS_PER_PAGE; i < gui.getSize(); i++) {
+            gui.setItem(i, filler);
+        }
+
+        if (currentPage > 0) {
+            gui.setItem(45, createButton(Material.ARROW, "<green><bold>Página Anterior</bold></green>", null));
+        }
+        if (currentPage < maxPages - 1) {
+            gui.setItem(53, createButton(Material.ARROW, "<green><bold>Página Siguiente</bold></green>", null));
+        }
     }
 
     private ItemStack createButton(Material material, String name, List<String> lore) {
@@ -142,21 +159,17 @@ public class ShopGUI {
 
     private ItemStack createEditorDisplayItem(ShopItem shopItem) {
         ItemStack display = shopItem.getItemStack().clone();
-        
-        // ===== CORREGIDO: Manejo de ItemMeta nulo =====
         ItemMeta meta = display.getItemMeta();
         if (meta == null) {
             meta = Bukkit.getItemFactory().getItemMeta(display.getType());
         }
-        
+
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(MessageUtils.parse(" "));
-        lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
-        lore.add(MessageUtils.parse("<yellow><bold>DATOS DE LA TIENDA</bold></yellow>"));
-        lore.add(MessageUtils.parse("<gray>Precio: <gold>" + shopItem.getPrice() + " Puntos</gold>"));
-        lore.add(MessageUtils.parse("<gray>Stock: <aqua>" + (shopItem.isInfiniteStock() ? "Infinito" : shopItem.getStock()) + "</aqua>"));
-        lore.add(MessageUtils.parse("<gray>Cooldown: <yellow>" + formatTime(shopItem.getCooldown()) + "</yellow>"));
-        lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
+        lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <gray>Precio: <gold>" + shopItem.getPrice() + " Puntos</gold>"));
+        lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <gray>Stock: <aqua>" + (shopItem.isInfiniteStock() ? "Infinito" : shopItem.getStock()) + "</aqua>"));
+        lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <gray>Cooldown: <yellow>" + formatTime(shopItem.getCooldown()) + "</yellow>"));
+        lore.add(MessageUtils.parse("<gray><italic>Click Izq: Editar | Click Der: Eliminar</italic></gray>"));
         meta.setLore(lore);
         display.setItemMeta(meta);
         return display;
@@ -168,7 +181,7 @@ public class ShopGUI {
         if (meta == null) {
             meta = Bukkit.getItemFactory().getItemMeta(display.getType());
         }
-        
+
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(MessageUtils.parse(" "));
 
@@ -183,16 +196,33 @@ public class ShopGUI {
 
         boolean canAfford = playerData.getContractPoints() >= shopItem.getPrice();
         boolean hasStock = shopItem.isInfiniteStock() || shopItem.getStock() > 0;
-
-        if (canAfford && hasStock && remainingCooldown == 0) {
-            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.buyable").replace("%price%", String.valueOf(shopItem.getPrice()))));
-        } else {
-            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.no-funds").replace("%price%", String.valueOf(shopItem.getPrice()))));
+        
+        lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
+        if (!shopItem.isInfiniteStock()) {
+             lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <white>Stock: <yellow>" + shopItem.getStock() + " disponible(s)"));
         }
+        
+        // ===== LÓGICA CORREGIDA PARA MOSTRAR UN SOLO PRECIO =====
+        
+        // 1. Se muestra el precio una sola vez, de forma incondicional.
+        lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <white>Precio: <gold>" + shopItem.getPrice() + " Puntos</gold>"));
+        lore.add(MessageUtils.parse(" "));
+
+        // 2. Ahora, solo se añade el mensaje de estado (comprar o no tener fondos).
+        if (canAfford && hasStock && remainingCooldown == 0) {
+            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.buyable")));
+        } else {
+             // Usamos un mensaje que NO contenga el precio para evitar la duplicación.
+             // Puedes cambiar este mensaje directamente o crear una nueva línea en tu lang.yml sin el placeholder %price%.
+             lore.add(MessageUtils.parse("<red>No tienes suficientes fondos"));
+        }
+        
+        // ===== FIN DE LA CORRECCIÓN =====
 
         if (remainingCooldown > 0) {
             lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.cooldown").replace("%time%", formatTime(remainingCooldown))));
         }
+        lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
 
         meta.setLore(lore);
         display.setItemMeta(meta);
@@ -212,7 +242,7 @@ public class ShopGUI {
             }
         }
     }
-
+    
     public static String formatTime(long seconds) {
         if (seconds <= 0) return "N/A";
         long days = TimeUnit.SECONDS.toDays(seconds);
