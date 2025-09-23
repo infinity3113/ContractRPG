@@ -14,6 +14,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ public class ShopListener implements Listener {
     private final ContractRPG plugin;
     private final Map<UUID, ChatInputSession> chatInputTasks = new HashMap<>();
 
+    // ... (Clase interna ChatInputSession sin cambios) ...
     private static class ChatInputSession {
         final String task;
         final int slot;
@@ -69,10 +72,10 @@ public class ShopListener implements Listener {
             currentPage = ((ShopGUI.PlayerShopHolder) holder).getPage();
         }
 
-        if (event.getSlot() == 45) { // Página Anterior
+        if (event.getSlot() == 45) { // Previous Page
             if (isEditor) plugin.getShopGUI().openEditor(player, currentPage - 1);
             else plugin.getShopGUI().openShop(player, currentPage - 1);
-        } else if (event.getSlot() == 53) { // Página Siguiente
+        } else if (event.getSlot() == 53) { // Next Page
             if (isEditor) plugin.getShopGUI().openEditor(player, currentPage + 1);
             else plugin.getShopGUI().openShop(player, currentPage + 1);
         }
@@ -131,7 +134,7 @@ public class ShopListener implements Listener {
     }
 
     private void handleMainEditorClick(InventoryClickEvent event) {
-        if (event.getSlot() >= 45 && event.getSlot() <= 53) return;
+        if (event.getSlot() >= 45) return;
         Player player = (Player) event.getWhoClicked();
         if (event.getClickedInventory() != null && event.getClickedInventory().equals(player.getInventory())) return;
 
@@ -140,32 +143,33 @@ public class ShopListener implements Listener {
         ItemStack currentItem = event.getCurrentItem();
         int page = ((ShopGUI.ShopEditorHolder) event.getInventory().getHolder()).getPage();
         
-        int newSlot = plugin.getShopManager().getShopItems().keySet().stream().max(Integer::compare).orElse(-1) + 1;
-
-        if (cursorItem != null && cursorItem.getType() != Material.AIR && (currentItem == null || currentItem.getType() == Material.AIR)) {
+        if (cursorItem != null && !cursorItem.getType().isAir() && (currentItem == null || currentItem.getType().isAir())) {
+            int newSlot = 0;
+            while(plugin.getShopManager().getShopItems().containsKey(newSlot)){
+                newSlot++;
+            }
             plugin.getShopManager().setItem(newSlot, new ShopItem(cursorItem.clone(), 0, 1, false, 0));
             cursorItem.setAmount(0);
             plugin.getShopGUI().openEditor(player, page);
             return;
         }
 
-        if (currentItem == null || currentItem.getType().isAir()) return;
+        if (currentItem == null || currentItem.getType().isAir() || !currentItem.hasItemMeta()) return;
 
-        List<Map.Entry<Integer, ShopItem>> sortedItems = new ArrayList<>(plugin.getShopManager().getShopItems().entrySet());
-        sortedItems.sort(Map.Entry.comparingByKey());
-        int index = (page * 45) + event.getSlot();
-        if (index >= sortedItems.size()) return;
+        ItemMeta meta = currentItem.getItemMeta();
+        if (meta != null && meta.getPersistentDataContainer().has(plugin.getShopGUI().shopItemIdKey, PersistentDataType.INTEGER)) {
+            Integer originalSlot = meta.getPersistentDataContainer().get(plugin.getShopGUI().shopItemIdKey, PersistentDataType.INTEGER);
+            if(originalSlot == null) return;
 
-        int originalSlot = sortedItems.get(index).getKey();
-        ShopItem shopItem = plugin.getShopManager().getItem(originalSlot);
+            ShopItem shopItem = plugin.getShopManager().getItem(originalSlot);
+            if (shopItem == null) return;
 
-        if (shopItem == null) return;
-
-        if (event.getClick() == ClickType.LEFT) {
-            plugin.getShopGUI().openItemEditor(player, originalSlot, shopItem);
-        } else if (event.getClick() == ClickType.RIGHT) {
-            plugin.getShopManager().setItem(originalSlot, null);
-            plugin.getShopGUI().openEditor(player, page);
+            if (event.getClick() == ClickType.LEFT) {
+                plugin.getShopGUI().openItemEditor(player, originalSlot, shopItem);
+            } else if (event.getClick() == ClickType.RIGHT) {
+                plugin.getShopManager().setItem(originalSlot, null);
+                plugin.getShopGUI().openEditor(player, page);
+            }
         }
     }
 
@@ -182,7 +186,7 @@ public class ShopListener implements Listener {
         }
 
         ItemStack clicked = event.getCurrentItem();
-        if (clicked == null || clicked.getType() == Material.AIR) return;
+        if (clicked == null || clicked.getType().isAir()) return;
 
         switch (clicked.getType()) {
             case GOLD_INGOT:
@@ -205,6 +209,8 @@ public class ShopListener implements Listener {
             case BARRIER:
                 int page = plugin.getShopGUI().editorPages.getOrDefault(player.getUniqueId(), 0);
                 plugin.getShopGUI().openEditor(player, page);
+                break;
+            default:
                 break;
         }
     }

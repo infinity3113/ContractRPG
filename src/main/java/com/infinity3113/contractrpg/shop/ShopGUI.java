@@ -5,11 +5,13 @@ import com.infinity3113.contractrpg.data.PlayerData;
 import com.infinity3113.contractrpg.util.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -19,14 +21,17 @@ import java.util.stream.Collectors;
 public class ShopGUI {
 
     private final ContractRPG plugin;
+    public final NamespacedKey shopItemIdKey;
     public final Map<UUID, Integer> playerShopPages = new HashMap<>();
     public final Map<UUID, Integer> editorPages = new HashMap<>();
-    private static final int ITEMS_PER_PAGE = 45; // 5 filas de 9 slots
+    private static final int ITEMS_PER_PAGE = 45;
 
     public ShopGUI(ContractRPG plugin) {
         this.plugin = plugin;
+        this.shopItemIdKey = new NamespacedKey(plugin, "shop-item-id");
     }
 
+    // ... (Clases internas Holder sin cambios) ...
     public static class PlayerShopHolder implements InventoryHolder {
         private final int page;
         public PlayerShopHolder(int page) { this.page = page; }
@@ -92,7 +97,7 @@ public class ShopGUI {
              int itemIndex = startIndex + i;
              if(itemIndex < sortedItems.size()){
                  Map.Entry<Integer, ShopItem> entry = sortedItems.get(itemIndex);
-                 editor.setItem(i, createEditorDisplayItem(entry.getValue()));
+                 editor.setItem(i, createEditorDisplayItem(entry.getValue(), entry.getKey()));
              }
         }
         
@@ -157,19 +162,23 @@ public class ShopGUI {
         return item;
     }
 
-    private ItemStack createEditorDisplayItem(ShopItem shopItem) {
+    private ItemStack createEditorDisplayItem(ShopItem shopItem, int originalSlot) {
         ItemStack display = shopItem.getItemStack().clone();
         ItemMeta meta = display.getItemMeta();
         if (meta == null) {
             meta = Bukkit.getItemFactory().getItemMeta(display.getType());
         }
 
-        List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+        List<String> lore = meta.hasLore() && meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(MessageUtils.parse(" "));
         lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <gray>Precio: <gold>" + shopItem.getPrice() + " Puntos</gold>"));
         lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <gray>Stock: <aqua>" + (shopItem.isInfiniteStock() ? "Infinito" : shopItem.getStock()) + "</aqua>"));
         lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <gray>Cooldown: <yellow>" + formatTime(shopItem.getCooldown()) + "</yellow>"));
+        lore.add(MessageUtils.parse(" "));
         lore.add(MessageUtils.parse("<gray><italic>Click Izq: Editar | Click Der: Eliminar</italic></gray>"));
+        
+        meta.getPersistentDataContainer().set(shopItemIdKey, PersistentDataType.INTEGER, originalSlot);
+        
         meta.setLore(lore);
         display.setItemMeta(meta);
         return display;
@@ -182,8 +191,24 @@ public class ShopGUI {
             meta = Bukkit.getItemFactory().getItemMeta(display.getType());
         }
 
-        List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+        List<String> lore = meta.hasLore() && meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(MessageUtils.parse(" "));
+        lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
+
+        if (!shopItem.isInfiniteStock()) {
+            String stockLine = plugin.getLangManager().getMessage("shop.item.stock_format")
+                    .replace("%stock%", String.valueOf(shopItem.getStock()));
+            lore.add(MessageUtils.parse(stockLine));
+        }
+
+        if (shopItem.getPrice() > 0) {
+            String priceLine = plugin.getLangManager().getMessage("shop.item.price_format")
+                    .replace("%price%", String.valueOf(shopItem.getPrice()));
+            lore.add(MessageUtils.parse(priceLine));
+        } else {
+            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.price_free")));
+        }
+        lore.add(" ");
 
         long remainingCooldown = 0;
         if (shopItem.getCooldown() > 0) {
@@ -196,32 +221,19 @@ public class ShopGUI {
 
         boolean canAfford = playerData.getContractPoints() >= shopItem.getPrice();
         boolean hasStock = shopItem.isInfiniteStock() || shopItem.getStock() > 0;
-        
-        lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
-        if (!shopItem.isInfiniteStock()) {
-             lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <white>Stock: <yellow>" + shopItem.getStock() + " disponible(s)"));
-        }
-        
-        // ===== LÓGICA CORREGIDA PARA MOSTRAR UN SOLO PRECIO =====
-        
-        // 1. Se muestra el precio una sola vez, de forma incondicional.
-        lore.add(MessageUtils.parse("<dark_gray>»</dark_gray> <white>Precio: <gold>" + shopItem.getPrice() + " Puntos</gold>"));
-        lore.add(MessageUtils.parse(" "));
-
-        // 2. Ahora, solo se añade el mensaje de estado (comprar o no tener fondos).
-        if (canAfford && hasStock && remainingCooldown == 0) {
-            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.buyable")));
-        } else {
-             // Usamos un mensaje que NO contenga el precio para evitar la duplicación.
-             // Puedes cambiar este mensaje directamente o crear una nueva línea en tu lang.yml sin el placeholder %price%.
-             lore.add(MessageUtils.parse("<red>No tienes suficientes fondos"));
-        }
-        
-        // ===== FIN DE LA CORRECCIÓN =====
 
         if (remainingCooldown > 0) {
-            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.cooldown").replace("%time%", formatTime(remainingCooldown))));
+            String cooldownMessage = plugin.getLangManager().getMessage("shop.item.status_on_cooldown")
+                    .replace("%time%", formatTime(remainingCooldown));
+            lore.add(MessageUtils.parse(cooldownMessage));
+        } else if (!hasStock) {
+            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.status_no_stock")));
+        } else if (!canAfford) {
+            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.status_no_funds")));
+        } else {
+            lore.add(MessageUtils.parse(plugin.getLangManager().getMessage("shop.item.status_buy")));
         }
+
         lore.add(MessageUtils.parse("<gray>--------------------</gray>"));
 
         meta.setLore(lore);

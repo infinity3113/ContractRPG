@@ -123,15 +123,25 @@ missions-manually-reset: "%prefix%<green>Has forzado el reinicio de las misiones
 placeholder-list-header: "<aqua>Placeholders Disponibles:"
 placeholder-list-format: "<gray>- <white>%placeholder%"
 
-# --- Mensajes de la Tienda ---
+# --- Mensajes de la Tienda (SECCIÓN CORREGIDA) ---
 shop:
   item:
-    buyable: "<green>Precio: <gold>%price% Puntos"
-    no-funds: "<red>Precio: <gold>%price% Puntos"
-    cooldown: "<red>Enfriamiento: <yellow>%time%"
+    # NUEVOS FORMATOS
+    price_format: "<dark_gray>»</dark_gray> <white>Precio: <gold>%price% Puntos</gold>"
+    price_free: "<dark_gray>»</dark_gray> <white>Precio: <green>Gratis</green>"
+    stock_format: "<dark_gray>»</dark_gray> <white>Stock: <yellow>%stock% disponible(s)</yellow>"
+    
+    # NUEVOS MENSAJES DE ESTADO (para el lore del item)
+    status_buy: "<green>¡Click para comprar!</green>"
+    status_no_funds: "<red>No tienes suficientes puntos.</red>"
+    status_no_stock: "<gray>No hay stock disponible.</gray>"
+    status_on_cooldown: "<red>Puedes comprar de nuevo en %time%.</red>"
+
   error:
+    # MENSAJES DE ERROR (para el chat)
     on-cooldown: "%prefix%<red>Ya has comprado este objeto. Espera a que se reabastezca."
     no-funds: "%prefix%<red>No tienes suficientes puntos para comprar esto."
+    no-stock: "%prefix%<red>Este objeto está agotado."
   success:
     purchase: "%prefix%<green>Has comprado <white>%item%<green> exitosamente."
   editor:
