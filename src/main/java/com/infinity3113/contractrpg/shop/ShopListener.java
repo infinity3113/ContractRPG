@@ -2,7 +2,7 @@ package com.infinity3113.contractrpg.shop;
 
 import com.infinity3113.contractrpg.ContractRPG;
 import com.infinity3113.contractrpg.data.PlayerData;
-import com.infinity3113.contractrpg.managers.LangManager; // <-- IMPORTACIÓN AÑADIDA
+import com.infinity3113.contractrpg.managers.LangManager;
 import com.infinity3113.contractrpg.util.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -24,7 +24,7 @@ import java.util.*;
 public class ShopListener implements Listener {
 
     private final ContractRPG plugin;
-    private final LangManager langManager; // <-- CAMPO AÑADIDO
+    private final LangManager langManager;
     private final Map<UUID, ChatInputSession> chatInputTasks = new HashMap<>();
 
     // Clase interna para manejar las entradas de chat
@@ -48,7 +48,7 @@ public class ShopListener implements Listener {
 
     public ShopListener(ContractRPG plugin) {
         this.plugin = plugin;
-        this.langManager = plugin.getLangManager(); // <-- INICIALIZACIÓN AÑADIDA
+        this.langManager = plugin.getLangManager();
     }
 
     @EventHandler
@@ -69,7 +69,7 @@ public class ShopListener implements Listener {
             handleAddItemSelectionClick(event, player);
         }
     }
-    
+
     private void handleMainEditorClick(InventoryClickEvent event, Player player) {
         event.setCancelled(true);
         ShopGUI.ShopEditorHolder holder = (ShopGUI.ShopEditorHolder) event.getView().getTopInventory().getHolder();
@@ -86,7 +86,7 @@ public class ShopListener implements Listener {
             plugin.getShopGUI().openAddItemSelection(player);
             return;
         }
-        
+
         ItemStack currentItem = event.getCurrentItem();
         if (currentItem != null && !currentItem.getType().isAir()) {
             ItemMeta meta = currentItem.getItemMeta();
@@ -119,7 +119,7 @@ public class ShopListener implements Listener {
             chatInputTasks.put(player.getUniqueId(), new ChatInputSession("add", clickedItem.clone()));
         }
     }
-    
+
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
@@ -132,8 +132,12 @@ public class ShopListener implements Listener {
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             if (message.equalsIgnoreCase("cancelar")) {
-                MessageUtils.sendMessage(player, "<red>Edición cancelada.</red>");
-                plugin.getShopGUI().openEditor(player, 0);
+                MessageUtils.sendMessage(player, "<red>Acción cancelada.</red>");
+                if (session.task.equals("add")) {
+                    plugin.getShopGUI().openEditor(player, 0);
+                } else {
+                    plugin.getShopGUI().openItemEditor(player, session.slotId);
+                }
                 return;
             }
 
@@ -155,11 +159,10 @@ public class ShopListener implements Listener {
                 }
                 plugin.getShopManager().setItemAndSave(session.slotId, shopItem);
                 MessageUtils.sendMessage(player, "<green>¡Valor actualizado con éxito!</green>");
-                plugin.getShopGUI().openItemEditor(player, session.slotId);
             } catch (NumberFormatException e) {
                 MessageUtils.sendMessage(player, langManager.getMessage("shop.editor.error-invalid-number"));
-                plugin.getShopGUI().openItemEditor(player, session.slotId);
             }
+            plugin.getShopGUI().openItemEditor(player, session.slotId);
         });
     }
 
@@ -200,7 +203,7 @@ public class ShopListener implements Listener {
         MessageUtils.sendMessage(player, "<green>¡Ítem añadido a la tienda con ID " + newSlotId + "!");
         plugin.getShopGUI().openEditor(player, 0);
     }
-    
+
     private void handleItemEditorClick(InventoryClickEvent event, Player player, ShopGUI.ItemEditorHolder holder) {
         event.setCancelled(true);
         int slotId = holder.getSlotId();
@@ -234,7 +237,7 @@ public class ShopListener implements Listener {
     private void startChatInput(Player player, String task, int slotId) {
         chatInputTasks.put(player.getUniqueId(), new ChatInputSession(task, slotId));
         player.closeInventory();
-        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.editor.prompt-" + task));
+        MessageUtils.sendMessage(player, langManager.getMessage("shop.editor.prompt-" + task));
     }
 
     private void handleStockChange(InventoryClickEvent event, ShopItem item) {
@@ -267,16 +270,16 @@ public class ShopListener implements Listener {
         PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
         if (playerData == null) return;
         if (shopItem.getPrice() > playerData.getContractPoints()) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.no-funds"));
+            MessageUtils.sendMessage(player, langManager.getMessage("shop.error.no-funds"));
             return;
         }
         if (!shopItem.isInfiniteStock() && shopItem.getStock() <= 0) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.no-stock"));
+            MessageUtils.sendMessage(player, langManager.getMessage("shop.error.no-stock"));
             return;
         }
         long lastPurchase = playerData.getPurchasedShopItems().getOrDefault(String.valueOf(slotId), 0L);
         if (System.currentTimeMillis() - lastPurchase < shopItem.getCooldown() * 1000) {
-            MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.error.on-cooldown"));
+            MessageUtils.sendMessage(player, langManager.getMessage("shop.error.on-cooldown"));
             return;
         }
         playerData.setContractPoints(playerData.getContractPoints() - (int) shopItem.getPrice());
@@ -286,20 +289,17 @@ public class ShopListener implements Listener {
         playerData.addPurchasedShopItem(String.valueOf(slotId));
         plugin.getShopManager().setItemAndSave(slotId, shopItem);
         player.getInventory().addItem(shopItem.getItemStack().clone());
-        MessageUtils.sendMessage(player, plugin.getLangManager().getMessage("shop.success.purchase")
+        MessageUtils.sendMessage(player, langManager.getMessage("shop.success.purchase")
                 .replace("%item%", shopItem.getItemStack().hasItemMeta() && shopItem.getItemStack().getItemMeta().hasDisplayName() ? shopItem.getItemStack().getItemMeta().getDisplayName() : shopItem.getItemStack().getType().name()));
         plugin.getShopGUI().openShop(player, currentPage);
     }
     
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
+        // <-- LÓGICA PROBLEMÁTICA ELIMINADA -->
+        // Ya no limpiamos la tarea de chat aquí.
         UUID uuid = event.getPlayer().getUniqueId();
         plugin.getShopGUI().playerShopPages.remove(uuid);
         plugin.getShopGUI().editorPages.remove(uuid);
-        // Limpiamos la tarea de chat si el jugador cierra el inventario para evitar que se quede "atascado"
-        if (chatInputTasks.containsKey(uuid)) {
-            chatInputTasks.remove(uuid);
-            MessageUtils.sendMessage((Player) event.getPlayer(), "<red>Acción cancelada.");
-        }
     }
 }

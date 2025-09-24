@@ -149,3 +149,5 @@ shop:
     prompt-cooldown: "%prefix%<yellow>Ahora escribe el tiempo de enfriamiento en segundos."
     error-invalid-number: "%prefix%<red>Entrada inválida. Por favor, introduce un número."
     success: "%prefix%<green>¡Item añadido a la tienda exitosamente!"
+    prompt-add: "Escribe en el chat el precio y el stock (opcional) para el nuevo ítem. Formato: <precio> [stock]"
+    error-invalid-number: "<red>Por favor, introduce un número válido."
