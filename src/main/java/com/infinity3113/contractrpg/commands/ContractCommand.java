@@ -38,7 +38,7 @@ public class ContractCommand implements CommandExecutor {
                 }
                 plugin.reloadConfig();
                 plugin.getLangManager().loadLanguages();
-                plugin.getShopManager().reloadConfig();
+                plugin.getShopManager().loadFromFile();
                 MessageUtils.sendMessage(player, langManager.getMessage("plugin-reloaded"));
                 return true;
             }
@@ -48,7 +48,6 @@ public class ContractCommand implements CommandExecutor {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                // <-- LÍNEA CORREGIDA -->
                 plugin.performAdminMissionReset(); 
                 MessageUtils.sendMessage(player, langManager.getMessage("missions-manually-reset"));
                 return true;
@@ -76,7 +75,6 @@ public class ContractCommand implements CommandExecutor {
             if (args[0].equalsIgnoreCase("stats")) {
                 PlayerData playerData = plugin.getStorageManager().getPlayerDataFromCache(player.getUniqueId());
                 if (playerData == null) return true;
-
                 List<String> statsMessage = langManager.getMessageList("stats_message");
                 for (String line : statsMessage) {
                     player.sendMessage(MessageUtils.parse(line
@@ -94,7 +92,6 @@ public class ContractCommand implements CommandExecutor {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                // ===== CORREGIDO: Se abre la página 0 =====
                 plugin.getShopGUI().openShop(player, 0);
                 return true;
             }
@@ -104,7 +101,7 @@ public class ContractCommand implements CommandExecutor {
                     MessageUtils.sendMessage(player, langManager.getMessage("no-permission"));
                     return true;
                 }
-                // ===== CORREGIDO: Se abre la página 0 =====
+                // El comando ahora solo abre la GUI. La adición se hace desde dentro.
                 plugin.getShopGUI().openEditor(player, 0);
                 return true;
             }

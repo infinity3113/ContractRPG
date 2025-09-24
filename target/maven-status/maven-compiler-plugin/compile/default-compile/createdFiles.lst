@@ -29,6 +29,7 @@ com\infinity3113\contractrpg\managers\GUIManager.class
 com\infinity3113\contractrpg\managers\LangManager.class
 com\infinity3113\contractrpg\data\PlayerData$1.class
 com\infinity3113\contractrpg\shop\ShopGUI$PlayerShopHolder.class
+com\infinity3113\contractrpg\shop\ShopGUI$AddItemSelectionHolder.class
 com\infinity3113\contractrpg\data\StorageManager.class
 com\infinity3113\contractrpg\data\PlayerData.class
 com\infinity3113\contractrpg\data\PlayerData$2.class
